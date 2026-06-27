@@ -125,6 +125,12 @@ function SignInPage() {
                 <Button type="submit" disabled={loading} className="w-full bg-[#D61F3A] hover:bg-[#B8172F]">
                   {loading ? "Please wait…" : "Sign in"}
                 </Button>
+                <p className="text-center text-[11px] text-white/50">
+                  Email not approved yet?{" "}
+                  <button type="button" onClick={() => setWaitlistOpen(true)} className="underline hover:text-white">
+                    Join the waitlist
+                  </button>
+                </p>
               </form>
             </TabsContent>
 
