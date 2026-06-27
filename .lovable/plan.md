@@ -1,50 +1,39 @@
-## Cause of the Vercel failure
+## Goal
+Make `adminprofira@gmail.com` the only bootstrap-allowed admin email, and create the auth user with password `profirarnc@1416` assigned the `admin` role.
 
-The deploy log shows nitro auto-detected Vercel and used the `nitro:vercel` preset (`Using nodejs24.x runtime`, output written to `.vercel/output/static/...`). That means the SSR/server bundle is emitted to `.vercel/output/`, **not** to `dist/server/server.js`.
+## Changes
 
-But `vercel.json` runs:
+### 1. Migration: update `prevent_unapproved_signups` bootstrap email
+Replace the hardcoded `aryanreshav8@gmail.com` fallback with `adminprofira@gmail.com` so only that email can sign up when no admin exists yet.
 
-```
-bun run build:static  →  vite build  &&  node scripts/prerender.mjs
-```
-
-`scripts/prerender.mjs` then tries to `import('dist/server/server.js')` and exits with:
-
-```
-[prerender] missing dist/server/server.js. Did the SSR build run?
-```
-
-…which is the `exit 1` Vercel reports.
-
-The `build:static` + manual prerender flow is meant for a plain static host. When deploying to Vercel you want nitro's Vercel preset to do everything (SSR functions + static assets via the Vercel Build Output API). Mixing the two breaks the build.
-
-## Fix
-
-Change `vercel.json` so Vercel just runs the normal nitro/Vercel build and lets nitro write directly to `.vercel/output` (Vercel auto-detects that — no `outputDirectory` needed).
-
-### New `vercel.json`
-
-```json
-{
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "bun run build",
-  "framework": null
-}
+```sql
+CREATE OR REPLACE FUNCTION public.prevent_unapproved_signups()
+RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
+DECLARE has_admin boolean;
+BEGIN
+  IF public.is_email_approved(NEW.email) THEN RETURN NEW; END IF;
+  SELECT EXISTS (SELECT 1 FROM public.user_roles WHERE role = 'admin') INTO has_admin;
+  IF NOT has_admin AND NEW.email = 'adminprofira@gmail.com' THEN RETURN NEW; END IF;
+  RAISE EXCEPTION 'This email is not approved. Please join the waitlist first.'
+    USING ERRCODE = 'check_violation';
+END;
+$$;
 ```
 
-(Removes `buildCommand: build:static`, removes `outputDirectory: dist/client`, removes `cleanUrls`/`trailingSlash` which only apply to static hosting and are irrelevant once nitro handles routing.)
+### 2. Migration: provision the admin user
+Use `auth.admin` via a one-shot SQL block (pgcrypto + direct insert into `auth.users`) OR — preferred — run a server-side bootstrap using the service role:
 
-No other code changes are required. `scripts/prerender.mjs` and the `build:static` npm script stay in the repo for users who want a fully static export elsewhere — they're just no longer used on Vercel.
+- Insert/confirm user `adminprofira@gmail.com` with password `profirarnc@1416` (email pre-confirmed).
+- Insert into `public.waitlist` as `approved` (so future re-signups also pass).
+- Insert `('admin')` row into `public.user_roles` for that user id.
+- Also insert the matching `public.profiles` row if the trigger doesn't fire.
 
-## Steps for you to deploy
+### 3. Optional cleanup
+If `aryanreshav8@gmail.com` currently has an `admin` role row and you want it revoked, remove that row in the same migration. (Tell me yes/no.)
 
-1. I apply the `vercel.json` change above (after you approve this plan / switch to build mode).
-2. Push to the branch connected to Vercel (or click **Redeploy** on the failed deployment).
-3. On Vercel project settings, leave Framework Preset as **Other**; do **not** override Build Command, Output Directory, or Install Command — `vercel.json` controls them.
-4. Add any required env vars in Vercel → Settings → Environment Variables (at minimum the Supabase ones from `.env`: `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY`, `VITE_SUPABASE_PROJECT_ID`, plus any server-side secrets your server functions read via `process.env`).
-5. Trigger the deploy. Nitro's Vercel preset will emit `.vercel/output/` and Vercel will serve SSR + static assets from it.
+## Security note
+Password `profirarnc@1416` is now visible in this chat. After first login I recommend rotating it from the account's profile settings.
 
-## Notes
-
-- Lovable's own "Publish" button is unaffected and remains the easiest path if you don't need Vercel specifically.
-- If you later want a true static export (no SSR), that's a different change — several routes (`_authenticated/*`, server functions) can't be prerendered, so going fully static would require removing/guarding them first.
+## Questions before I implement
+1. Revoke admin from `aryanreshav8@gmail.com`? (yes / no / keep both as admin)
+2. Should `adminprofira@gmail.com` be the *only* allowed admin going forward (block future bootstrap), or keep the "first admin" fallback in place for this one email?
