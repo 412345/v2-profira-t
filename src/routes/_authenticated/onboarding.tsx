@@ -476,10 +476,11 @@ function StepTerms({ state, dispatch }: { state: State; dispatch: React.Dispatch
   }
 
   const bank = {
-    name: (import.meta.env.VITE_COMPANY_BANK_NAME as string) || "PROFIRA Capital",
-    account: (import.meta.env.VITE_COMPANY_ACCOUNT_NUMBER as string) || "0000-0000-0000",
-    ifsc: (import.meta.env.VITE_COMPANY_IFSC_CODE as string) || "HDFC0000000",
-    holder: (import.meta.env.VITE_COMPANY_ACCOUNT_HOLDER as string) || "PROFIRA Capital Pvt Ltd",
+    name: (import.meta.env.VITE_COMPANY_BANK_NAME as string) || "Bandhan Bank",
+    branch: (import.meta.env.VITE_COMPANY_BRANCH as string) || "Ranchi",
+    account: (import.meta.env.VITE_COMPANY_ACCOUNT_NUMBER as string) || "20100077095972",
+    ifsc: (import.meta.env.VITE_COMPANY_IFSC_CODE as string) || "BDBL0001088",
+    holder: (import.meta.env.VITE_COMPANY_ACCOUNT_HOLDER as string) || "M/S SOY ENGINEERING WORKS",
   };
 
   return (
@@ -511,6 +512,7 @@ function StepTerms({ state, dispatch }: { state: State; dispatch: React.Dispatch
           <p className="text-xs font-semibold uppercase tracking-wider" style={{ color: ACCENT }}>Transfer to</p>
           <BankRow label="Account Holder" value={bank.holder} />
           <BankRow label="Bank Name" value={bank.name} />
+          <BankRow label="Branch" value={bank.branch} />
           <BankRow label="Account Number" value={bank.account} />
           <BankRow label="IFSC" value={bank.ifsc} />
           <p className="mt-2 text-[11px]" style={{ color: SECONDARY }}>
