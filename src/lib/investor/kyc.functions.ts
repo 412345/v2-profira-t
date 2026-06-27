@@ -3,7 +3,7 @@ import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { investmentRequestSchema, kycSaveSchema, validateGovId, type GovIdType } from "./schemas";
 
-async function getOrCreateMyInvestor(supabase: ReturnType<typeof requireSupabaseAuth> extends never ? never : any) {
+async function getOrCreateMyInvestor(supabase: any): Promise<{ id: string; kyc_completed: boolean }> {
   const { data, error } = await supabase.rpc("get_or_create_my_investor");
   if (error) throw new Error(error.message);
   return data as { id: string; kyc_completed: boolean };
