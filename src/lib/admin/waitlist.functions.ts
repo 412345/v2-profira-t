@@ -51,8 +51,9 @@ export const setWaitlistStatus = createServerFn({ method: "POST" })
     let emailError: string | null = null;
     if (data.status === "approved") {
       try {
-        const { sendApprovalEmail } = await import("./email.functions");
-        const res = await sendApprovalEmail({ data: { waitlistId: data.id } });
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { sendApprovalEmailForWaitlistId } = await import("./email.server");
+        const res = await sendApprovalEmailForWaitlistId(supabaseAdmin, data.id);
         emailStatus = res.status;
       } catch (err) {
         emailStatus = "failed";
