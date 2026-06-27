@@ -45,13 +45,12 @@ function SignInPage() {
       const roles = (data ?? []).map((r) => r.role as string);
       if (roles.includes("admin") || roles.includes("staff")) {
         navigate({ to: "/admin", replace: true });
-      } else if (roles.includes("investor")) {
-        navigate({ to: "/home", replace: true });
       } else {
-        navigate({ to: "/signin", replace: true });
+        // Investors (or users with no role yet) land on the dashboard.
+        navigate({ to: "/portfolio", replace: true });
       }
     } catch {
-      navigate({ to: "/signin", replace: true });
+      navigate({ to: "/portfolio", replace: true });
     }
   }
 
@@ -91,8 +90,9 @@ function SignInPage() {
         }
         throw error;
       }
-      toast.success("Account created.");
-      await routeByRole();
+      toast.success("Account created — please sign in.");
+      setPassword("");
+      setTab("signin");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Sign up failed");
     } finally {
