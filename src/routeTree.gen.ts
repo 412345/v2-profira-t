@@ -16,6 +16,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AdminLoginRouteImport } from './routes/admin.login'
 import { Route as AuthenticatedPortfolioRouteImport } from './routes/_authenticated/portfolio'
+import { Route as AuthenticatedOnboardingRouteImport } from './routes/_authenticated/onboarding'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminWaitlistRouteImport } from './routes/_authenticated/admin.waitlist'
@@ -23,6 +24,7 @@ import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOnboardingRouteImport } from './routes/_authenticated/admin.onboarding'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
+import { Route as AuthenticatedAdminInvestmentRequestsRouteImport } from './routes/_authenticated/admin.investment-requests'
 import { Route as AuthenticatedAdminFundsRouteImport } from './routes/_authenticated/admin.funds'
 import { Route as AuthenticatedAdminInvestorsIdRouteImport } from './routes/_authenticated/admin.investors.$id'
 import { Route as AuthenticatedAdminDocumentsIdRouteImport } from './routes/_authenticated/admin.documents.$id'
@@ -59,6 +61,11 @@ const AdminLoginRoute = AdminLoginRouteImport.update({
 const AuthenticatedPortfolioRoute = AuthenticatedPortfolioRouteImport.update({
   id: '/portfolio',
   path: '/portfolio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOnboardingRoute = AuthenticatedOnboardingRouteImport.update({
+  id: '/onboarding',
+  path: '/onboarding',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -101,6 +108,12 @@ const AuthenticatedAdminInvestorsRoute =
     path: '/investors',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminInvestmentRequestsRoute =
+  AuthenticatedAdminInvestmentRequestsRouteImport.update({
+    id: '/investment-requests',
+    path: '/investment-requests',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminFundsRoute = AuthenticatedAdminFundsRouteImport.update({
   id: '/funds',
   path: '/funds',
@@ -125,9 +138,11 @@ export interface FileRoutesByFullPath {
   '/home': typeof HomeRoute
   '/signin': typeof SigninRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
+  '/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -142,9 +157,11 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/home': typeof HomeRoute
   '/signin': typeof SigninRoute
+  '/onboarding': typeof AuthenticatedOnboardingRoute
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
+  '/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -162,9 +179,11 @@ export interface FileRoutesById {
   '/home': typeof HomeRoute
   '/signin': typeof SigninRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
+  '/_authenticated/onboarding': typeof AuthenticatedOnboardingRoute
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
+  '/_authenticated/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/_authenticated/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -182,9 +201,11 @@ export interface FileRouteTypes {
     | '/home'
     | '/signin'
     | '/admin'
+    | '/onboarding'
     | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
+    | '/admin/investment-requests'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
@@ -199,9 +220,11 @@ export interface FileRouteTypes {
     | '/about'
     | '/home'
     | '/signin'
+    | '/onboarding'
     | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
+    | '/admin/investment-requests'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
@@ -218,9 +241,11 @@ export interface FileRouteTypes {
     | '/home'
     | '/signin'
     | '/_authenticated/admin'
+    | '/_authenticated/onboarding'
     | '/_authenticated/portfolio'
     | '/admin/login'
     | '/_authenticated/admin/funds'
+    | '/_authenticated/admin/investment-requests'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/onboarding'
     | '/_authenticated/admin/payouts'
@@ -291,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPortfolioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/onboarding': {
+      id: '/_authenticated/onboarding'
+      path: '/onboarding'
+      fullPath: '/onboarding'
+      preLoaderRoute: typeof AuthenticatedOnboardingRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/admin': {
       id: '/_authenticated/admin'
       path: '/admin'
@@ -340,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvestorsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/investment-requests': {
+      id: '/_authenticated/admin/investment-requests'
+      path: '/investment-requests'
+      fullPath: '/admin/investment-requests'
+      preLoaderRoute: typeof AuthenticatedAdminInvestmentRequestsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/funds': {
       id: '/_authenticated/admin/funds'
       path: '/funds'
@@ -380,6 +419,7 @@ const AuthenticatedAdminInvestorsRouteWithChildren =
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminFundsRoute: typeof AuthenticatedAdminFundsRoute
+  AuthenticatedAdminInvestmentRequestsRoute: typeof AuthenticatedAdminInvestmentRequestsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRouteWithChildren
   AuthenticatedAdminOnboardingRoute: typeof AuthenticatedAdminOnboardingRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
@@ -391,6 +431,8 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminFundsRoute: AuthenticatedAdminFundsRoute,
+  AuthenticatedAdminInvestmentRequestsRoute:
+    AuthenticatedAdminInvestmentRequestsRoute,
   AuthenticatedAdminInvestorsRoute:
     AuthenticatedAdminInvestorsRouteWithChildren,
   AuthenticatedAdminOnboardingRoute: AuthenticatedAdminOnboardingRoute,
@@ -406,11 +448,13 @@ const AuthenticatedAdminRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRouteWithChildren
+  AuthenticatedOnboardingRoute: typeof AuthenticatedOnboardingRoute
   AuthenticatedPortfolioRoute: typeof AuthenticatedPortfolioRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRouteWithChildren,
+  AuthenticatedOnboardingRoute: AuthenticatedOnboardingRoute,
   AuthenticatedPortfolioRoute: AuthenticatedPortfolioRoute,
 }
 
