@@ -100,56 +100,168 @@ export type Database = {
         }
         Relationships: []
       }
-      investors: {
+      investment_requests: {
         Row: {
           amount: number
-          bank_account: string
+          approved_at: string | null
+          approved_by: string | null
           created_at: string
-          created_by: string | null
-          email: string
-          full_name: string
           id: string
-          ifsc: string
+          investor_id: string
           notes: string | null
-          pan: string
-          phone: string
-          status: Database["public"]["Enums"]["investor_status"]
-          tenure_months: number
+          payment_method: string
+          reference_number: string | null
+          status: string
+          transaction_id: string
           updated_at: string
         }
         Insert: {
-          amount?: number
-          bank_account: string
+          amount: number
+          approved_at?: string | null
+          approved_by?: string | null
           created_at?: string
-          created_by?: string | null
-          email: string
-          full_name: string
           id?: string
-          ifsc: string
+          investor_id: string
           notes?: string | null
-          pan: string
-          phone: string
-          status?: Database["public"]["Enums"]["investor_status"]
-          tenure_months?: number
+          payment_method?: string
+          reference_number?: string | null
+          status?: string
+          transaction_id: string
           updated_at?: string
         }
         Update: {
           amount?: number
-          bank_account?: string
+          approved_at?: string | null
+          approved_by?: string | null
+          created_at?: string
+          id?: string
+          investor_id?: string
+          notes?: string | null
+          payment_method?: string
+          reference_number?: string | null
+          status?: string
+          transaction_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_requests_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      investors: {
+        Row: {
+          aadhaar_name: string | null
+          account_holder_name: string | null
+          amount: number | null
+          bank_account: string | null
+          bank_name: string | null
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string | null
+          gov_id_number: string | null
+          gov_id_type: string | null
+          id: string
+          ifsc: string | null
+          kyc_completed: boolean
+          kyc_completed_at: string | null
+          notes: string | null
+          pan: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["investor_status"]
+          tenure_months: number
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          aadhaar_name?: string | null
+          account_holder_name?: string | null
+          amount?: number | null
+          bank_account?: string | null
+          bank_name?: string | null
           created_at?: string
           created_by?: string | null
-          email?: string
-          full_name?: string
+          email: string
+          full_name?: string | null
+          gov_id_number?: string | null
+          gov_id_type?: string | null
           id?: string
-          ifsc?: string
+          ifsc?: string | null
+          kyc_completed?: boolean
+          kyc_completed_at?: string | null
           notes?: string | null
-          pan?: string
-          phone?: string
+          pan?: string | null
+          phone?: string | null
           status?: Database["public"]["Enums"]["investor_status"]
           tenure_months?: number
           updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          aadhaar_name?: string | null
+          account_holder_name?: string | null
+          amount?: number | null
+          bank_account?: string | null
+          bank_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string
+          full_name?: string | null
+          gov_id_number?: string | null
+          gov_id_type?: string | null
+          id?: string
+          ifsc?: string | null
+          kyc_completed?: boolean
+          kyc_completed_at?: string | null
+          notes?: string | null
+          pan?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["investor_status"]
+          tenure_months?: number
+          updated_at?: string
+          user_id?: string | null
         }
         Relationships: []
+      }
+      kyc_documents: {
+        Row: {
+          created_at: string
+          doc_type: string
+          file_url: string
+          id: string
+          investor_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          doc_type: string
+          file_url: string
+          id?: string
+          investor_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          doc_type?: string
+          file_url?: string
+          id?: string
+          investor_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kyc_documents_investor_id_fkey"
+            columns: ["investor_id"]
+            isOneToOne: false
+            referencedRelation: "investors"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payouts: {
         Row: {
@@ -287,6 +399,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_or_create_my_investor: {
+        Args: never
+        Returns: {
+          aadhaar_name: string | null
+          account_holder_name: string | null
+          amount: number | null
+          bank_account: string | null
+          bank_name: string | null
+          created_at: string
+          created_by: string | null
+          email: string
+          full_name: string | null
+          gov_id_number: string | null
+          gov_id_type: string | null
+          id: string
+          ifsc: string | null
+          kyc_completed: boolean
+          kyc_completed_at: string | null
+          notes: string | null
+          pan: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["investor_status"]
+          tenure_months: number
+          updated_at: string
+          user_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "investors"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       get_waitlist_status: {
         Args: { _email: string }
         Returns: {
