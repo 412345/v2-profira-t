@@ -33,7 +33,7 @@ export const setInvestmentRequestStatus = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
-    const patch: Record<string, unknown> = {
+    const patch = {
       status: data.status,
       notes: data.notes ?? null,
       approved_by: data.status === "approved" ? context.userId : null,
