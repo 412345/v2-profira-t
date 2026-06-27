@@ -392,6 +392,8 @@ function HomePage() {
               Join PROFIRA and access professionally managed investment opportunities.
             </p>
             <button
+              type="button"
+              onClick={handleStartInvesting}
               className="mt-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-white transition active:scale-[0.99]"
               style={{
                 background: "linear-gradient(135deg, #D61F3A 0%, #FF3355 100%)",
