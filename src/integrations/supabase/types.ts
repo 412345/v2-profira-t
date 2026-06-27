@@ -52,6 +52,33 @@ export type Database = {
           },
         ]
       }
+      email_templates: {
+        Row: {
+          created_at: string
+          html_body: string
+          id: string
+          name: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          html_body: string
+          id?: string
+          name: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          html_body?: string
+          id?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       funds: {
         Row: {
           aum: number
@@ -217,6 +244,8 @@ export type Database = {
           name: string
           notes: string | null
           phone: string
+          resend_email_sent_at: string | null
+          resend_email_status: string
           source: string
           status: string
           updated_at: string
@@ -230,6 +259,8 @@ export type Database = {
           name: string
           notes?: string | null
           phone: string
+          resend_email_sent_at?: string | null
+          resend_email_status?: string
           source?: string
           status?: string
           updated_at?: string
@@ -243,6 +274,8 @@ export type Database = {
           name?: string
           notes?: string | null
           phone?: string
+          resend_email_sent_at?: string | null
+          resend_email_status?: string
           source?: string
           status?: string
           updated_at?: string
@@ -254,6 +287,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_waitlist_status: {
+        Args: { _email: string }
+        Returns: {
+          approved_at: string
+          status: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
