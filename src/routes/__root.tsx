@@ -138,12 +138,17 @@ function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const isAdmin = pathname.startsWith("/admin");
-  const showAuthPill = !isAdmin && pathname !== "/" && pathname !== "/signin";
+  const isSignin = pathname === "/signin";
+  const isPortfolio = pathname.startsWith("/portfolio");
+  const isOnboarding = pathname.startsWith("/onboarding");
+  const showAtmosphere = !isAdmin && !isSignin && !isPortfolio && !isOnboarding;
+  const showAuthPill = !isAdmin && pathname !== "/" && !isSignin;
+  const isFullDark = isAdmin || isPortfolio || isOnboarding;
 
   return (
     <QueryClientProvider client={queryClient}>
-      {!isAdmin && <Atmosphere />}
-      <div className={isAdmin ? "min-h-dvh bg-[#070809] text-white" : "relative z-10 min-h-dvh pb-32"}>
+      {showAtmosphere && <Atmosphere />}
+      <div className={isFullDark ? "min-h-dvh bg-[#070809] text-white" : "relative z-10 min-h-dvh pb-32"}>
         <Outlet />
       </div>
       {showAuthPill && (
