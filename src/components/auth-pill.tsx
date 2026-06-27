@@ -2,15 +2,13 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
-import { getMyProfile, getMyRole, type AppRole } from "@/lib/auth/role.functions";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import { LogOut, LayoutDashboard, BarChart3, User as UserIcon } from "lucide-react";
+import { getMyRole, type AppRole } from "@/lib/auth/role.functions";
+import { LogOut, LayoutDashboard } from "lucide-react";
 
 export function AuthPill() {
   const [mounted, setMounted] = useState(false);
-  const [name, setName] = useState<string | null>(null);
+  const [signedIn, setSignedIn] = useState(false);
   const [role, setRole] = useState<AppRole | null>(null);
-  const fetchProfile = useServerFn(getMyProfile);
   const fetchRole = useServerFn(getMyRole);
   const navigate = useNavigate();
 
@@ -21,16 +19,15 @@ export function AuthPill() {
       const { data } = await supabase.auth.getSession();
       if (!data.session) {
         if (alive) {
-          setName(null);
+          setSignedIn(false);
           setRole(null);
         }
         return;
       }
+      if (alive) setSignedIn(true);
       try {
-        const [p, r] = await Promise.all([fetchProfile(), fetchRole()]);
-        if (!alive) return;
-        setName(p?.full_name ?? p?.email ?? null);
-        setRole(r.primary);
+        const r = await fetchRole();
+        if (alive) setRole(r.primary);
       } catch {
         /* ignore */
       }
@@ -45,11 +42,11 @@ export function AuthPill() {
       alive = false;
       sub.subscription.unsubscribe();
     };
-  }, [fetchProfile, fetchRole]);
+  }, [fetchRole]);
 
   if (!mounted) return null;
 
-  if (!name) {
+  if (!signedIn) {
     return (
       <Link
         to="/signin"
@@ -65,34 +62,25 @@ export function AuthPill() {
     navigate({ to: "/", replace: true });
   }
 
-  const firstName = name.split(" ")[0] || name;
+  const dashboardTo = role === "admin" || role === "staff" ? "/admin" : "/portfolio";
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger className="flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur-sm transition hover:border-white/40 hover:bg-white/[0.08]">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#D61F3A]/30 text-[10px]">
-          <UserIcon className="h-3 w-3" />
-        </span>
-        Hi, {firstName}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="border-white/10 bg-[#0B0C10] text-white">
-        {(role === "admin" || role === "staff") && (
-          <DropdownMenuItem asChild>
-            <Link to="/admin" className="cursor-pointer">
-              <LayoutDashboard className="mr-2 h-4 w-4" /> Admin
-            </Link>
-          </DropdownMenuItem>
-        )}
-        <DropdownMenuItem asChild>
-          <Link to="/portfolio" className="cursor-pointer">
-            <BarChart3 className="mr-2 h-4 w-4" /> Portfolio
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator className="bg-white/10" />
-        <DropdownMenuItem onClick={signOut} className="cursor-pointer">
-          <LogOut className="mr-2 h-4 w-4" /> Sign out
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <div className="flex items-center gap-2">
+      <Link
+        to={dashboardTo}
+        className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur-sm transition hover:border-white/50 hover:bg-white/[0.08]"
+      >
+        <LayoutDashboard className="h-3 w-3" />
+        Dashboard
+      </Link>
+      <button
+        type="button"
+        onClick={signOut}
+        className="flex items-center gap-1.5 rounded-full border border-[#D61F3A]/60 bg-[#D61F3A]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#D61F3A]/20"
+      >
+        <LogOut className="h-3 w-3" />
+        Sign out
+      </button>
+    </div>
   );
 }

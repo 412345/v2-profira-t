@@ -10,6 +10,7 @@ export type PortfolioSummary = {
     kyc_completed: boolean;
     status: string;
   } | null;
+  waitlistName: string | null;
   kycComplete: boolean;
   totalInvested: number;
   pendingAmount: number;
@@ -34,6 +35,7 @@ export const getMyInvestorSummary = createServerFn({ method: "GET" })
     if (!investor) {
       return {
         investor: null,
+        waitlistName: null,
         kycComplete: false,
         totalInvested: 0,
         pendingAmount: 0,
@@ -41,6 +43,18 @@ export const getMyInvestorSummary = createServerFn({ method: "GET" })
         payouts: [],
         requests: [],
       };
+    }
+
+    let waitlistName: string | null = null;
+    if (investor.email) {
+      const { data: wl } = await context.supabase
+        .from("waitlist")
+        .select("name")
+        .eq("email", investor.email.toLowerCase())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      waitlistName = (wl?.name as string | null) ?? null;
     }
 
     const [reqsRes, payoutsRes] = await Promise.all([
@@ -77,6 +91,7 @@ export const getMyInvestorSummary = createServerFn({ method: "GET" })
 
     return {
       investor,
+      waitlistName,
       kycComplete: !!investor.kyc_completed,
       totalInvested,
       pendingAmount,

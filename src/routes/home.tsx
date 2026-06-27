@@ -1,5 +1,5 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { useCallback, useMemo, useState } from "react";
 import {
   ArrowRight,
   ArrowUpRight,
@@ -15,6 +15,7 @@ import {
   Star,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { supabase } from "@/integrations/supabase/client";
 
 import { CandleChart, HeroCandleBackdrop, MiniSparkline } from "@/components/profira/candles";
 
@@ -69,12 +70,22 @@ const ranges = ["1M", "3M", "6M", "1Y", "ALL"] as const;
 type Range = (typeof ranges)[number];
 
 function HomePage() {
+  const navigate = useNavigate();
   const [amount, setAmount] = useState(10000);
   const monthly = useMemo(() => amount * 0.10, [amount]);
   const sixMonth = monthly * 6;
   const [range, setRange] = useState<Range>("1M");
   const candleCount = { "1M": 24, "3M": 32, "6M": 44, "1Y": 56, ALL: 72 }[range];
   const candleSeed = { "1M": 7, "3M": 13, "6M": 19, "1Y": 23, ALL: 29 }[range];
+
+  const handleStartInvesting = useCallback(async () => {
+    const { data } = await supabase.auth.getSession();
+    if (data.session) {
+      navigate({ to: "/onboarding" });
+    } else {
+      navigate({ to: "/signin" });
+    }
+  }, [navigate]);
 
   return (
     <main
@@ -128,6 +139,8 @@ function HomePage() {
 
         {/* Primary CTA */}
         <button
+          type="button"
+          onClick={handleStartInvesting}
           className="flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-white transition active:scale-[0.99]"
           style={{
             background: "linear-gradient(135deg, #D61F3A 0%, #FF3355 100%)",
@@ -379,6 +392,8 @@ function HomePage() {
               Join PROFIRA and access professionally managed investment opportunities.
             </p>
             <button
+              type="button"
+              onClick={handleStartInvesting}
               className="mt-4 flex h-[52px] w-full items-center justify-center gap-2 rounded-2xl text-[15px] font-semibold text-white transition active:scale-[0.99]"
               style={{
                 background: "linear-gradient(135deg, #D61F3A 0%, #FF3355 100%)",

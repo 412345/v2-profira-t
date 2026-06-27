@@ -49,12 +49,17 @@ function PortfolioPage() {
   const fn = useServerFn(getMyInvestorSummary);
   const { data } = useSuspenseQuery(portfolioOpts(fn));
   const hasInvestments = data.totalInvested > 0;
+  const greetingName =
+    data.investor?.full_name?.trim() ||
+    data.waitlistName?.trim() ||
+    data.investor?.email?.split("@")[0] ||
+    "Investor";
 
   return (
     <main className="min-h-[100dvh] w-full font-sans" style={{ background: BG, color: "#FFFFFF" }}>
       <div className="mx-auto w-full max-w-[520px] px-5 pt-6 pb-32">
         <Header />
-        <Greeting name={data.investor?.full_name ?? "Investor"} />
+        <Greeting name={greetingName} />
 
         {!data.kycComplete && <CompletionBanner />}
 

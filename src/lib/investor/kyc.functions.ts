@@ -76,5 +76,44 @@ export const ensureMyInvestor = createServerFn({ method: "POST" })
     return { investorId: investor.id };
   });
 
+export type OnboardingBootstrap = {
+  fullName: string;
+  phone: string;
+  kycComplete: boolean;
+  startStep: 0 | 1 | 2 | 3;
+};
+
+export const getOnboardingBootstrap = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }): Promise<OnboardingBootstrap> => {
+    const { data: row, error } = await context.supabase.rpc("get_or_create_my_investor");
+    if (error) throw new Error(error.message);
+    const inv = row as {
+      full_name: string | null;
+      phone: string | null;
+      email: string | null;
+      kyc_completed: boolean;
+    };
+    let waitlistName: string | null = null;
+    let waitlistPhone: string | null = null;
+    if (inv.email) {
+      const { data: wl } = await context.supabase
+        .from("waitlist")
+        .select("name, phone")
+        .eq("email", inv.email.toLowerCase())
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      waitlistName = (wl?.name as string | null) ?? null;
+      waitlistPhone = (wl?.phone as string | null) ?? null;
+    }
+    return {
+      fullName: inv.full_name || waitlistName || "",
+      phone: inv.phone || waitlistPhone || "",
+      kycComplete: !!inv.kyc_completed,
+      startStep: inv.kyc_completed ? 2 : 0,
+    };
+  });
+
 // Keep zod referenced so tree-shake doesn't drop it before validators run on edge.
 void z;
