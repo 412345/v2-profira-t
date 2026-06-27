@@ -3,12 +3,13 @@ import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listWaitlist, setWaitlistStatus } from "@/lib/admin/waitlist.functions";
+import { sendApprovalEmail } from "@/lib/admin/email.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Check, X, Copy, Search, Mailbox } from "lucide-react";
+import { Check, X, Copy, Search, Mailbox, Send } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/waitlist")({
@@ -20,6 +21,7 @@ type Status = "all" | "pending" | "approved" | "rejected";
 function WaitlistPage() {
   const fetchList = useServerFn(listWaitlist);
   const setStatus = useServerFn(setWaitlistStatus);
+  const resend = useServerFn(sendApprovalEmail);
   const qc = useQueryClient();
 
   const [status, setStatusFilter] = useState<Status>("all");
@@ -34,12 +36,27 @@ function WaitlistPage() {
   const mut = useMutation({
     mutationFn: (vars: { id: string; status: "approved" | "rejected" }) =>
       setStatus({ data: vars }),
-    onSuccess: (_d, vars) => {
-      toast.success(vars.status === "approved" ? "Approved." : "Rejected.");
+    onSuccess: (res, vars) => {
+      if (vars.status === "rejected") {
+        toast.success("Rejected.");
+      } else if (res.emailStatus === "sent") {
+        toast.success("Approved and emailed.");
+      } else {
+        toast.error(`Approved, but email failed: ${res.emailError ?? "unknown error"}`);
+      }
       qc.invalidateQueries({ queryKey: ["admin", "waitlist"] });
       qc.invalidateQueries({ queryKey: ["admin", "stats"] });
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Failed"),
+  });
+
+  const resendMut = useMutation({
+    mutationFn: (waitlistId: string) => resend({ data: { waitlistId } }),
+    onSuccess: () => {
+      toast.success("Email resent.");
+      qc.invalidateQueries({ queryKey: ["admin", "waitlist"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Resend failed"),
   });
 
   const rows = query.data ?? [];

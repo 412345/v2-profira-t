@@ -16,7 +16,7 @@ export const listWaitlist = createServerFn({ method: "GET" })
     await assertStaff(context.supabase, context.userId);
     let q = context.supabase
       .from("waitlist")
-      .select("id, name, email, phone, status, source, notes, approved_at, created_at")
+      .select("id, name, email, phone, status, source, notes, approved_at, created_at, resend_email_status, resend_email_sent_at")
       .order("created_at", { ascending: false });
     if (data.status !== "all") q = q.eq("status", data.status);
     if (data.source !== "all") q = q.eq("source", data.source);
