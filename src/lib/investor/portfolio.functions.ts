@@ -91,6 +91,7 @@ export const getMyInvestorSummary = createServerFn({ method: "GET" })
 
     return {
       investor,
+      waitlistName,
       kycComplete: !!investor.kyc_completed,
       totalInvested,
       pendingAmount,
