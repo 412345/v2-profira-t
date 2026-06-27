@@ -40,10 +40,10 @@ function InvestorsPage() {
       if (status !== "all" && r.status !== status) return false;
       if (!ql) return true;
       return (
-        r.full_name.toLowerCase().includes(ql) ||
-        r.email.toLowerCase().includes(ql) ||
-        r.pan.toLowerCase().includes(ql) ||
-        r.phone.toLowerCase().includes(ql)
+        (r.full_name ?? "").toLowerCase().includes(ql) ||
+        (r.email ?? "").toLowerCase().includes(ql) ||
+        (r.pan ?? "").toLowerCase().includes(ql) ||
+        (r.phone ?? "").toLowerCase().includes(ql)
       );
     });
   }, [data, q, status]);
