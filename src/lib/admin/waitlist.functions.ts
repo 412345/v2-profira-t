@@ -45,6 +45,20 @@ export const setWaitlistStatus = createServerFn({ method: "POST" })
         : { status: data.status, approved_by: null, approved_at: null };
     const { error } = await context.supabase.from("waitlist").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
-    return { ok: true };
+
+    // Auto-send approval email; surface failure to admin without rolling back the approval.
+    let emailStatus: "sent" | "failed" | "skipped" = "skipped";
+    let emailError: string | null = null;
+    if (data.status === "approved") {
+      try {
+        const { sendApprovalEmail } = await import("./email.functions");
+        const res = await sendApprovalEmail({ data: { waitlistId: data.id } });
+        emailStatus = res.status;
+      } catch (err) {
+        emailStatus = "failed";
+        emailError = err instanceof Error ? err.message : "Email send failed";
+      }
+    }
+    return { ok: true, emailStatus, emailError };
   });
 
