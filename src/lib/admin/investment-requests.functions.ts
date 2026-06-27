@@ -62,7 +62,7 @@ export const approveInvestmentRequest = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { data: result, error } = await context.supabase.rpc("approve_investment_request", {
       _id: data.id,
-      _notes: data.notes ?? null,
+      _notes: data.notes,
     });
     if (error) throw new Error(error.message);
     return result as {
@@ -84,7 +84,7 @@ export const rejectInvestmentRequest = createServerFn({ method: "POST" })
     await assertStaff(context.supabase, context.userId);
     const { error } = await context.supabase.rpc("reject_investment_request", {
       _id: data.id,
-      _notes: data.notes ?? null,
+      _notes: data.notes,
     });
     if (error) throw new Error(error.message);
     return { ok: true };
@@ -107,13 +107,13 @@ export const setInvestmentRequestStatus = createServerFn({ method: "POST" })
     if (data.status === "approved") {
       const { error } = await context.supabase.rpc("approve_investment_request", {
         _id: data.id,
-        _notes: data.notes ?? null,
+        _notes: data.notes,
       });
       if (error) throw new Error(error.message);
     } else if (data.status === "rejected") {
       const { error } = await context.supabase.rpc("reject_investment_request", {
         _id: data.id,
-        _notes: data.notes ?? null,
+        _notes: data.notes,
       });
       if (error) throw new Error(error.message);
     } else {
