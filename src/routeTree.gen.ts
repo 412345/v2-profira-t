@@ -24,6 +24,7 @@ import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOnboardingRouteImport } from './routes/_authenticated/admin.onboarding'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
+import { Route as AuthenticatedAdminInvestmentsRouteImport } from './routes/_authenticated/admin.investments'
 import { Route as AuthenticatedAdminInvestmentRequestsRouteImport } from './routes/_authenticated/admin.investment-requests'
 import { Route as AuthenticatedAdminFundsRouteImport } from './routes/_authenticated/admin.funds'
 import { Route as AuthenticatedAdminInvestorsIdRouteImport } from './routes/_authenticated/admin.investors.$id'
@@ -108,6 +109,12 @@ const AuthenticatedAdminInvestorsRoute =
     path: '/investors',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
+const AuthenticatedAdminInvestmentsRoute =
+  AuthenticatedAdminInvestmentsRouteImport.update({
+    id: '/investments',
+    path: '/investments',
+    getParentRoute: () => AuthenticatedAdminRoute,
+  } as any)
 const AuthenticatedAdminInvestmentRequestsRoute =
   AuthenticatedAdminInvestmentRequestsRouteImport.update({
     id: '/investment-requests',
@@ -143,6 +150,7 @@ export interface FileRoutesByFullPath {
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
+  '/admin/investments': typeof AuthenticatedAdminInvestmentsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -162,6 +170,7 @@ export interface FileRoutesByTo {
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
+  '/admin/investments': typeof AuthenticatedAdminInvestmentsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -184,6 +193,7 @@ export interface FileRoutesById {
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
   '/_authenticated/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
+  '/_authenticated/admin/investments': typeof AuthenticatedAdminInvestmentsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/_authenticated/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -206,6 +216,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/funds'
     | '/admin/investment-requests'
+    | '/admin/investments'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
@@ -225,6 +236,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/admin/funds'
     | '/admin/investment-requests'
+    | '/admin/investments'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
@@ -246,6 +258,7 @@ export interface FileRouteTypes {
     | '/admin/login'
     | '/_authenticated/admin/funds'
     | '/_authenticated/admin/investment-requests'
+    | '/_authenticated/admin/investments'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/onboarding'
     | '/_authenticated/admin/payouts'
@@ -372,6 +385,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvestorsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
+    '/_authenticated/admin/investments': {
+      id: '/_authenticated/admin/investments'
+      path: '/investments'
+      fullPath: '/admin/investments'
+      preLoaderRoute: typeof AuthenticatedAdminInvestmentsRouteImport
+      parentRoute: typeof AuthenticatedAdminRoute
+    }
     '/_authenticated/admin/investment-requests': {
       id: '/_authenticated/admin/investment-requests'
       path: '/investment-requests'
@@ -420,6 +440,7 @@ const AuthenticatedAdminInvestorsRouteWithChildren =
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminFundsRoute: typeof AuthenticatedAdminFundsRoute
   AuthenticatedAdminInvestmentRequestsRoute: typeof AuthenticatedAdminInvestmentRequestsRoute
+  AuthenticatedAdminInvestmentsRoute: typeof AuthenticatedAdminInvestmentsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRouteWithChildren
   AuthenticatedAdminOnboardingRoute: typeof AuthenticatedAdminOnboardingRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
@@ -433,6 +454,7 @@ const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminFundsRoute: AuthenticatedAdminFundsRoute,
   AuthenticatedAdminInvestmentRequestsRoute:
     AuthenticatedAdminInvestmentRequestsRoute,
+  AuthenticatedAdminInvestmentsRoute: AuthenticatedAdminInvestmentsRoute,
   AuthenticatedAdminInvestorsRoute:
     AuthenticatedAdminInvestorsRouteWithChildren,
   AuthenticatedAdminOnboardingRoute: AuthenticatedAdminOnboardingRoute,

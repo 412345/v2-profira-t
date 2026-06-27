@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { LineChart, Line, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { Wallet, Users, Banknote, Mailbox } from "lucide-react";
+import { Wallet, Users, Banknote, Mailbox, ClipboardCheck, AlertCircle } from "lucide-react";
 import { KpiCard } from "@/components/admin/kpi-card";
 import { getDashboardStats } from "@/lib/admin/dashboard.functions";
 import { fmtINR } from "@/lib/admin/format";
@@ -25,7 +25,30 @@ function DashboardPage() {
         <p className="text-sm text-[#B8B8B8]">Operational overview of funds, investors and payouts.</p>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+        <KpiCard
+          label="Pending Verification"
+          value={
+            isLoading ? (
+              "…"
+            ) : (
+              <span className="inline-flex items-center gap-2">
+                {(data?.pendingRequestsCount ?? 0).toLocaleString("en-IN")}
+                {(data?.pendingRequestsCount ?? 0) > 0 && (
+                  <span className="inline-flex h-2 w-2 animate-pulse rounded-full bg-amber-400" />
+                )}
+              </span>
+            )
+          }
+          hint="Requests awaiting review"
+          icon={<AlertCircle className="h-4 w-4" />}
+        />
+        <KpiCard
+          label="Capital Under Review"
+          value={isLoading ? "…" : fmtINR(data?.pendingRequestsVolume ?? 0)}
+          hint="Sum of pending principals"
+          icon={<ClipboardCheck className="h-4 w-4" />}
+        />
         <KpiCard
           label="Total Funds Managed"
           value={isLoading ? "…" : fmtINR(data?.totalAum ?? 0)}
