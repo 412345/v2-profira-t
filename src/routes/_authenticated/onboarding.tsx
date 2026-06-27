@@ -1,9 +1,9 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useMemo, useReducer, useState } from "react";
+import { useEffect, useMemo, useReducer, useState } from "react";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Check, ChevronLeft, ChevronRight, Copy, Loader2 } from "lucide-react";
-import { saveKycDetails, createInvestmentRequest, ensureMyInvestor } from "@/lib/investor/kyc.functions";
+import { saveKycDetails, createInvestmentRequest, getOnboardingBootstrap } from "@/lib/investor/kyc.functions";
 import { personalSchema, bankSchema, govIdTypes, type GovIdType } from "@/lib/investor/schemas";
 
 export const Route = createFileRoute("/_authenticated/onboarding")({
@@ -68,15 +68,32 @@ function fmtINR(n: number) {
 
 function OnboardingPage() {
   const [state, dispatch] = useReducer(reducer, initial);
-  const ensureFn = useServerFn(ensureMyInvestor);
-  useQuery({ queryKey: ["ensure-investor"], queryFn: () => ensureFn(), staleTime: Infinity });
+  const bootstrapFn = useServerFn(getOnboardingBootstrap);
+  const { data: bootstrap } = useQuery({
+    queryKey: ["onboarding-bootstrap"],
+    queryFn: () => bootstrapFn(),
+    staleTime: 60_000,
+  });
+  const [hydrated, setHydrated] = useState(false);
+  useEffect(() => {
+    if (!bootstrap || hydrated) return;
+    dispatch({
+      type: "set",
+      patch: {
+        full_name: bootstrap.fullName || "",
+        phone: bootstrap.phone || "",
+        step: bootstrap.startStep as StepKey,
+      },
+    });
+    setHydrated(true);
+  }, [bootstrap, hydrated]);
 
   return (
     <main className="min-h-[100dvh] w-full font-sans" style={{ background: "#07080a", color: "#fff" }}>
       <div className="mx-auto w-full max-w-[560px] px-5 pt-8 pb-24">
         <ProgressDots step={state.step} />
         <div className="mt-6">
-          {state.step === 0 && <StepPersonal state={state} dispatch={dispatch} />}
+          {state.step === 0 && <StepPersonal state={state} dispatch={dispatch} placeholderName={bootstrap?.fullName || ""} />}
           {state.step === 1 && <StepBank state={state} dispatch={dispatch} />}
           {state.step === 2 && <StepAmount state={state} dispatch={dispatch} />}
           {state.step === 3 && <StepTerms state={state} dispatch={dispatch} />}
@@ -190,7 +207,7 @@ function Field({
 
 const inputCls = "w-full rounded-xl border bg-[#0F1014] px-3.5 py-2.5 text-sm text-white outline-none placeholder:text-white/30 focus:border-[#D61F3A]";
 
-function StepPersonal({ state, dispatch }: { state: State; dispatch: React.Dispatch<Action> }) {
+function StepPersonal({ state, dispatch, placeholderName }: { state: State; dispatch: React.Dispatch<Action>; placeholderName: string }) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   function next() {
     const res = personalSchema.safeParse({
@@ -221,7 +238,7 @@ function StepPersonal({ state, dispatch }: { state: State; dispatch: React.Dispa
           style={{ borderColor: BORDER }}
           value={state.full_name}
           onChange={(e) => dispatch({ type: "set", patch: { full_name: e.target.value } })}
-          placeholder="Aryan Reshav"
+          placeholder={placeholderName || "Your full legal name"}
         />
       </Field>
       <Field label="Mobile Number" error={errors.phone}>
