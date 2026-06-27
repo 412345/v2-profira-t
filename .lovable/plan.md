@@ -1,94 +1,71 @@
-# PROFIRA Investor Onboarding + KYC + Investment Flow
+# Phase 3 — Administrative Ledger Control Panel
 
-Adds onboarding wizard, real portfolio data, and admin-reviewable investment requests. Keeps existing routes and `vercel.json` untouched.
+Skipping email sending (per instruction). Building the back-office investment review workflow, audit trail, and document payload generation on top of the existing `investment_requests` / `documents` / `investors` schema.
 
-## Database migration
+## 1. Database migration
 
-ALTER `public.investors` (all nullable for backward compat):
-- `aadhaar_name text`, `gov_id_type text` (check in `aadhaar|pan|passport|driving_license`), `gov_id_number text`, `bank_name text`, `account_holder_name text`, `kyc_completed boolean NOT NULL DEFAULT false`, `kyc_completed_at timestamptz`, `user_id uuid REFERENCES auth.users` (so an investor row can be owned by a logged-in user)
+Single migration adding:
 
-CREATE `public.investment_requests`:
-- `id`, `investor_id` FK, `amount numeric(14,2)`, `transaction_id text`, `status text DEFAULT 'pending'` (validated via trigger, not CHECK), `payment_method text DEFAULT 'bank_transfer'`, `reference_number text UNIQUE` (auto-gen `PROF-XXXXXX`), `approved_by uuid REFERENCES auth.users`, `approved_at timestamptz`, `notes text`, timestamps
-- Trigger generates reference number on insert
-- RLS: investor reads own (`investor_id IN (SELECT id FROM investors WHERE user_id = auth.uid())`); staff reads/updates all via `is_staff(auth.uid())`
-- GRANTs to `authenticated` + `service_role`
+- `ALTER TABLE public.documents ADD COLUMN IF NOT EXISTS document_payload JSONB NOT NULL DEFAULT '{}'::jsonb;` (column already loosely exists as `payload jsonb`; will add `document_payload` only if missing, otherwise no-op — verified via existing schema before writing).
+- `public.admin_audit_logs` table exactly as specified, plus:
+  - `GRANT SELECT, INSERT ON public.admin_audit_logs TO authenticated;`
+  - `GRANT ALL ON public.admin_audit_logs TO service_role;`
+  - RLS enabled; policy: staff-only SELECT/INSERT via `public.is_staff(auth.uid())`.
+  - Index on `(targeted_subsystem_category, associated_record_reference_key)` and `(created_at desc)`.
+- Helper RPC `public.approve_investment_request(_id uuid, _notes text)` (SECURITY DEFINER, staff-gated) that, in one transaction:
+  1. Loads the request + investor.
+  2. Marks request `approved`, sets `approved_by`, `approved_at`, `notes`.
+  3. Bumps `investors.amount` and flips status to `active`.
+  4. Inserts an `agreement` row into `documents` with computed `document_payload` (principal, monthly payout = P × 0.10, maturity = P + P × 0.10 × 6, tenure 6, investor snapshot, bank snapshot, reference number, generated_at).
+  5. Inserts a corresponding `admin_audit_logs` row (`executed_action_descriptor='approve_investment'`, `targeted_subsystem_category='investment_requests'`).
+- Companion RPC `public.reject_investment_request(_id uuid, _notes text)` — marks rejected + writes audit log.
 
-CREATE `public.kyc_documents`:
-- `id`, `investor_id` FK, `doc_type text`, `file_url text`, `status text DEFAULT 'pending'`, `created_at`
-- Same RLS shape (own + staff); GRANTs
+## 2. Server functions (`src/lib/admin/`)
 
-Helper RPC `public.get_or_create_my_investor()` (SECURITY DEFINER): returns the investor row for `auth.uid()`, creating a shell row from `profiles`/email if missing. Used by the wizard so KYC writes always target one row.
+- `audit.functions.ts` → `listAuditLogs({ category?, limit })` for staff.
+- Extend `investment-requests.functions.ts`:
+  - Replace the inline `setInvestmentRequestStatus` approve/reject body with calls to the new RPCs so the document + audit log are written atomically.
+  - Add `getInvestmentRequestDetail(id)` returning the request joined with full investor row (KYC, bank, contact) for the drawer.
+- Extend `dashboard.functions.ts` to also return:
+  - `pendingInvestmentRequests` (count) and `pendingInvestmentVolume` (sum of `amount` where status='pending').
 
-## Server functions
+## 3. Admin UI
 
-`src/lib/investor/portfolio.functions.ts` (auth, runs as the user):
-- `getMyInvestorSummary()` — returns `{ investor, kycComplete, totalInvested, monthlyReturn, payouts[], requests[] }`. Sums approved `investment_requests.amount` for total invested; pulls `payouts` joined by investor_id for the sparkline.
-- `getMyInvestmentRequests()` — returns this user's requests with status + reference_number.
+### a. Metrics hub (`/_authenticated/admin`)
+- Add two KPI cards: "Pending Verification Requests" (amber dot when > 0) and "Capital Volume Under Review" (₹ sum). Keep existing growth/payouts charts; switch fund-growth series to a real cumulative sum derived from approved `investment_requests.created_at` (replace the synthesized curve).
 
-`src/lib/investor/kyc.functions.ts`:
-- `saveKycDetails({ ...kycFields })` — validates with zod, calls `get_or_create_my_investor` RPC to get the investor id, updates investor fields, sets `kyc_completed=true`, `kyc_completed_at=now()`.
-- `createInvestmentRequest({ amount, transactionId })` — requires `kyc_completed`; validates `amount >= 10000`, `transactionId` alphanumeric 10-22; inserts row; returns `{ ok, requestId, referenceNumber }`.
+### b. Investments board (`/_authenticated/admin/investments`)
+- New route file (mirrors the existing `admin.investment-requests.tsx` but renamed/aliased to `/admin/investments` per spec; keep old path as redirect to avoid breaking nav).
+- Search input (name/email/UTR) + status filter dropdown (All / Pending / Approved / Rejected) using URL search params via `validateSearch`.
+- Responsive table columns: Investor, Email, Amount, UTR (`transaction_id`), Status pill (amber/emerald/red, `rounded-full`), Created (IST), Actions ("Review" opens drawer).
+- Mobile: card layout fallback via `useMediaQuery` (same pattern as `admin.investors.tsx`).
+- Add the new route to `admin-nav.tsx`.
 
-Enhance existing:
-- `src/lib/admin/investors.functions.ts` `listInvestors` + `getInvestor` — include KYC fields and aggregated request counts.
-- New admin fn `listInvestmentRequests({ status })` and `setInvestmentRequestStatus({ id, status, notes? })` (approve/reject), with cascading effect: on `approved`, set the investor's status to `active` if not already.
+### c. Inspection drawer (shadcn `Sheet`, `side="right"`, `max-w-[600px]`, bg `#14151A`, border `#1F2024`)
+Sections:
+1. **Investor profile** — full name, phone, email, `gov_id_type`, masked `gov_id_number` (show last 4 only), `aadhaar_name`.
+2. **Banking** — `bank_name`, `ifsc`, masked `bank_account` (last 4), `account_holder_name`.
+3. **Allocation & yield** — Principal, Monthly payout (`P × 0.10`), Maturity total (`P + P × 0.10 × 6`), 6-month tenure, UTR.
+4. **Admin actions** — `notes` textarea, "Approve & Generate Documents" (`bg-[#D61F3A] hover:bg-[#B8172F]`, calls approve RPC via server fn, toasts success with generated reference, invalidates queries, closes drawer), "Reject Transaction Intake" (outlined red, calls reject).
+- All mutations via `useMutation` + `useServerFn`, loading spinners, error toast.
 
-All KYC server fns gate on auth via `requireSupabaseAuth`. No anon paths.
+## 4. File touch list
 
-Schemas centralized in `src/lib/investor/schemas.ts`:
-- Phone: strip non-digits, accept 10 Indian digits
-- IFSC: `[A-Z]{4}0[A-Z0-9]{6}` auto-upper
-- Aadhaar: 12 digits; PAN: `[A-Z]{5}[0-9]{4}[A-Z]`; Passport: alphanumeric 6-12; DL: alphanumeric 8-20
-- Bank account: 6-18 digits
-- Investment amount: integer `>= 10000`, `<= 50_000_000`
-- Transaction id: alphanumeric 10-22
+```text
+supabase/migrations/<ts>_phase3_admin_ledger.sql   (new)
+src/lib/admin/audit.functions.ts                   (new)
+src/lib/admin/investment-requests.functions.ts     (edit: RPC calls + detail fn)
+src/lib/admin/dashboard.functions.ts               (edit: new KPIs + real growth)
+src/components/admin/admin-nav.tsx                 (edit: add /admin/investments)
+src/components/admin/investment-review-drawer.tsx  (new)
+src/routes/_authenticated/admin.investments.tsx    (new — primary board)
+src/routes/_authenticated/admin.investment-requests.tsx (edit: thin redirect or keep as alias)
+src/routes/_authenticated/admin.index.tsx          (edit: 2 new KPIs)
+```
 
-## UI
+No changes to `vite.config.ts`, `vercel.json`, auth, or existing public routes. No new npm deps. Email sending intentionally out of scope.
 
-`/onboarding` (under `_authenticated/onboarding.tsx`):
-- 5-step wizard using local state + zod-resolved react-hook-form per step.
-- Progress dots header: crimson active, green check completed, gray future. Mobile-friendly stepper.
-- Each step is its own component file under `src/components/onboarding/`: `step-personal.tsx`, `step-bank.tsx`, `step-amount.tsx`, `step-terms.tsx`, `step-confirmation.tsx`. Wizard manages navigation + persisted state in `useReducer`.
-- Step 3 amount cards (₹10K / ₹50K / ₹1L / ₹5L) + custom input with en-IN formatter. Real-time calc: monthly = amount * 0.10; 6-month maturity = amount * (1.10)^6 (~1.7716 ×); shows principal + returns + total.
-- Step 4 reveals company bank card only after all three checkboxes ticked. Bank values come from `import.meta.env.VITE_COMPANY_*` (publishable) so they can render client-side. Copy buttons use `navigator.clipboard`. Submits via `useMutation` calling `createInvestmentRequest`.
-- Step 5 shows animated check (CSS keyframes), reference number from mutation response, CTA back to `/portfolio`.
-- Shake animation via Tailwind utility (`@keyframes shake` added to `src/styles.css`).
-- Loading spinners via lucide `Loader2` on submit buttons.
+## 5. Verification
 
-`/portfolio` (rewrite of `_authenticated/portfolio.tsx`):
-- Loader uses `ensureQueryData(['portfolio'])` calling `getMyInvestorSummary`. Adds `errorComponent` + `notFoundComponent`.
-- Uses `useSuspenseQuery` in the page component.
-- 40% banner shown when `!kycComplete` (linking to `/onboarding`). Otherwise shows real total / change / sparkline / payout list.
-- Empty state when no requests: "No active investments" + Start Investing CTA → `/onboarding`.
-- Market Watch widget keeps existing static data (or pulls from `src/lib/market-data.ts`) — out of scope to wire to a real feed; left as visual.
-- Quick Actions: Download Agreement / Invoice link to existing `admin.documents.$id.tsx` rendering, scoped to the investor's own documents. Invest More → `/onboarding` (skips to amount step if KYC done). Withdraw → toast "Coming soon" (no backend feature requested).
-- Performance timeframe toggle filters the SVG sparkline from real `payouts` rows by month.
-
-Admin:
-- Add `/_authenticated/admin/investment-requests.tsx` listing pending/approved/rejected with approve/reject buttons, calling the new admin fns. Linked from admin nav.
-- Tiny "KYC" badge column on `admin.investors.tsx`.
-
-## Vercel hygiene
-
-- Append `VITE_COMPANY_BANK_NAME`, `VITE_COMPANY_ACCOUNT_NUMBER`, `VITE_COMPANY_IFSC_CODE`, `VITE_COMPANY_ACCOUNT_HOLDER` to `.env.example` (publishable — they're shown to the investor anyway).
-- No new dependencies. `vercel.json`, `vite.config.ts`, auto-gen files untouched.
-- All new server fns are `.functions.ts`; all UI is `.tsx`.
-- Each wizard step + portfolio route gets `errorComponent` + skeleton loading.
-
-## What I will NOT change
-
-- Landing `/`, `/home`, `/signin`, waitlist dialog, existing admin routes, RLS on existing tables, auth flow, Supabase auto-gen files, vercel.json, vite.config.ts.
-
-## Order of operations after approval
-
-1. Single migration (investor columns + 2 tables + RPC + trigger + RLS + GRANTs).
-2. Schemas + 4 new server-fn files; enhance admin investors fn.
-3. Onboarding wizard route + 5 step components + shake keyframe in styles.
-4. Portfolio rewrite to real data.
-5. Admin investment-requests page + investors KYC badge.
-6. Update `.env.example`.
-7. `bun run build` smoke test.
-
-## Open question
-
-Investor → user linkage: the spec says "investor lands on Portfolio" right after signup, but the existing `investors` table has no `user_id`. I'm adding one and the `get_or_create_my_investor` RPC so newly signed-in approved users automatically get a shell investor row to fill in. If you'd prefer a different linkage (e.g. matching by `auth.users.email = investors.email`), say so and I'll swap to that — otherwise I proceed with the user_id column.
+- `bun run build` clean.
+- Manual loop: open `/admin/investments` → filter pending → open drawer → approve → confirm `documents` row + `admin_audit_logs` row + investor flipped to active + amount bumped + reference number visible.

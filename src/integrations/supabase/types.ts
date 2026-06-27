@@ -14,9 +14,40 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_logs: {
+        Row: {
+          associated_record_reference_key: string
+          created_at: string
+          detailed_structural_payload_snapshot: Json
+          executed_action_descriptor: string
+          id: string
+          officer_id: string | null
+          targeted_subsystem_category: string
+        }
+        Insert: {
+          associated_record_reference_key: string
+          created_at?: string
+          detailed_structural_payload_snapshot?: Json
+          executed_action_descriptor: string
+          id?: string
+          officer_id?: string | null
+          targeted_subsystem_category: string
+        }
+        Update: {
+          associated_record_reference_key?: string
+          created_at?: string
+          detailed_structural_payload_snapshot?: Json
+          executed_action_descriptor?: string
+          id?: string
+          officer_id?: string | null
+          targeted_subsystem_category?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string
+          document_payload: Json
           id: string
           investor_id: string
           issued_at: string
@@ -26,6 +57,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          document_payload?: Json
           id?: string
           investor_id: string
           issued_at?: string
@@ -35,6 +67,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          document_payload?: Json
           id?: string
           investor_id?: string
           issued_at?: string
@@ -399,6 +432,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      approve_investment_request: {
+        Args: { _id: string; _notes?: string }
+        Returns: Json
+      }
       get_or_create_my_investor: {
         Args: never
         Returns: {
@@ -448,6 +485,10 @@ export type Database = {
       }
       is_email_approved: { Args: { _email: string }; Returns: boolean }
       is_staff: { Args: { _user_id: string }; Returns: boolean }
+      reject_investment_request: {
+        Args: { _id: string; _notes?: string }
+        Returns: Json
+      }
     }
     Enums: {
       app_role: "admin" | "staff" | "investor"

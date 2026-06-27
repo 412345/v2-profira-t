@@ -24,7 +24,7 @@ import { Route as AuthenticatedAdminSettingsRouteImport } from './routes/_authen
 import { Route as AuthenticatedAdminPayoutsRouteImport } from './routes/_authenticated/admin.payouts'
 import { Route as AuthenticatedAdminOnboardingRouteImport } from './routes/_authenticated/admin.onboarding'
 import { Route as AuthenticatedAdminInvestorsRouteImport } from './routes/_authenticated/admin.investors'
-import { Route as AuthenticatedAdminInvestmentRequestsRouteImport } from './routes/_authenticated/admin.investment-requests'
+import { Route as AuthenticatedAdminInvestmentsRouteImport } from './routes/_authenticated/admin.investments'
 import { Route as AuthenticatedAdminFundsRouteImport } from './routes/_authenticated/admin.funds'
 import { Route as AuthenticatedAdminInvestorsIdRouteImport } from './routes/_authenticated/admin.investors.$id'
 import { Route as AuthenticatedAdminDocumentsIdRouteImport } from './routes/_authenticated/admin.documents.$id'
@@ -108,10 +108,10 @@ const AuthenticatedAdminInvestorsRoute =
     path: '/investors',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
-const AuthenticatedAdminInvestmentRequestsRoute =
-  AuthenticatedAdminInvestmentRequestsRouteImport.update({
-    id: '/investment-requests',
-    path: '/investment-requests',
+const AuthenticatedAdminInvestmentsRoute =
+  AuthenticatedAdminInvestmentsRouteImport.update({
+    id: '/investments',
+    path: '/investments',
     getParentRoute: () => AuthenticatedAdminRoute,
   } as any)
 const AuthenticatedAdminFundsRoute = AuthenticatedAdminFundsRouteImport.update({
@@ -142,7 +142,7 @@ export interface FileRoutesByFullPath {
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
-  '/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
+  '/admin/investments': typeof AuthenticatedAdminInvestmentsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -161,7 +161,7 @@ export interface FileRoutesByTo {
   '/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/admin/funds': typeof AuthenticatedAdminFundsRoute
-  '/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
+  '/admin/investments': typeof AuthenticatedAdminInvestmentsRoute
   '/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -183,7 +183,7 @@ export interface FileRoutesById {
   '/_authenticated/portfolio': typeof AuthenticatedPortfolioRoute
   '/admin/login': typeof AdminLoginRoute
   '/_authenticated/admin/funds': typeof AuthenticatedAdminFundsRoute
-  '/_authenticated/admin/investment-requests': typeof AuthenticatedAdminInvestmentRequestsRoute
+  '/_authenticated/admin/investments': typeof AuthenticatedAdminInvestmentsRoute
   '/_authenticated/admin/investors': typeof AuthenticatedAdminInvestorsRouteWithChildren
   '/_authenticated/admin/onboarding': typeof AuthenticatedAdminOnboardingRoute
   '/_authenticated/admin/payouts': typeof AuthenticatedAdminPayoutsRoute
@@ -205,7 +205,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
-    | '/admin/investment-requests'
+    | '/admin/investments'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
@@ -224,7 +224,7 @@ export interface FileRouteTypes {
     | '/portfolio'
     | '/admin/login'
     | '/admin/funds'
-    | '/admin/investment-requests'
+    | '/admin/investments'
     | '/admin/investors'
     | '/admin/onboarding'
     | '/admin/payouts'
@@ -245,7 +245,7 @@ export interface FileRouteTypes {
     | '/_authenticated/portfolio'
     | '/admin/login'
     | '/_authenticated/admin/funds'
-    | '/_authenticated/admin/investment-requests'
+    | '/_authenticated/admin/investments'
     | '/_authenticated/admin/investors'
     | '/_authenticated/admin/onboarding'
     | '/_authenticated/admin/payouts'
@@ -372,11 +372,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminInvestorsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
-    '/_authenticated/admin/investment-requests': {
-      id: '/_authenticated/admin/investment-requests'
-      path: '/investment-requests'
-      fullPath: '/admin/investment-requests'
-      preLoaderRoute: typeof AuthenticatedAdminInvestmentRequestsRouteImport
+    '/_authenticated/admin/investments': {
+      id: '/_authenticated/admin/investments'
+      path: '/investments'
+      fullPath: '/admin/investments'
+      preLoaderRoute: typeof AuthenticatedAdminInvestmentsRouteImport
       parentRoute: typeof AuthenticatedAdminRoute
     }
     '/_authenticated/admin/funds': {
@@ -419,7 +419,7 @@ const AuthenticatedAdminInvestorsRouteWithChildren =
 
 interface AuthenticatedAdminRouteChildren {
   AuthenticatedAdminFundsRoute: typeof AuthenticatedAdminFundsRoute
-  AuthenticatedAdminInvestmentRequestsRoute: typeof AuthenticatedAdminInvestmentRequestsRoute
+  AuthenticatedAdminInvestmentsRoute: typeof AuthenticatedAdminInvestmentsRoute
   AuthenticatedAdminInvestorsRoute: typeof AuthenticatedAdminInvestorsRouteWithChildren
   AuthenticatedAdminOnboardingRoute: typeof AuthenticatedAdminOnboardingRoute
   AuthenticatedAdminPayoutsRoute: typeof AuthenticatedAdminPayoutsRoute
@@ -431,8 +431,7 @@ interface AuthenticatedAdminRouteChildren {
 
 const AuthenticatedAdminRouteChildren: AuthenticatedAdminRouteChildren = {
   AuthenticatedAdminFundsRoute: AuthenticatedAdminFundsRoute,
-  AuthenticatedAdminInvestmentRequestsRoute:
-    AuthenticatedAdminInvestmentRequestsRoute,
+  AuthenticatedAdminInvestmentsRoute: AuthenticatedAdminInvestmentsRoute,
   AuthenticatedAdminInvestorsRoute:
     AuthenticatedAdminInvestorsRouteWithChildren,
   AuthenticatedAdminOnboardingRoute: AuthenticatedAdminOnboardingRoute,
@@ -472,13 +471,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
