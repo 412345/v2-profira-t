@@ -16,7 +16,7 @@ export const listWaitlist = createServerFn({ method: "GET" })
     await assertStaff(context.supabase, context.userId);
     let q = context.supabase
       .from("waitlist")
-      .select("id, name, email, phone, status, source, notes, approved_at, created_at")
+      .select("id, name, email, phone, status, source, notes, approved_at, created_at, resend_email_status, resend_email_sent_at")
       .order("created_at", { ascending: false });
     if (data.status !== "all") q = q.eq("status", data.status);
     if (data.source !== "all") q = q.eq("source", data.source);
@@ -45,6 +45,21 @@ export const setWaitlistStatus = createServerFn({ method: "POST" })
         : { status: data.status, approved_by: null, approved_at: null };
     const { error } = await context.supabase.from("waitlist").update(patch).eq("id", data.id);
     if (error) throw new Error(error.message);
-    return { ok: true };
+
+    // Auto-send approval email; surface failure to admin without rolling back the approval.
+    let emailStatus: "sent" | "failed" | "skipped" = "skipped";
+    let emailError: string | null = null;
+    if (data.status === "approved") {
+      try {
+        const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+        const { sendApprovalEmailForWaitlistId } = await import("./email.server");
+        const res = await sendApprovalEmailForWaitlistId(supabaseAdmin, data.id);
+        emailStatus = res.status;
+      } catch (err) {
+        emailStatus = "failed";
+        emailError = err instanceof Error ? err.message : "Email send failed";
+      }
+    }
+    return { ok: true, emailStatus, emailError };
   });
 
