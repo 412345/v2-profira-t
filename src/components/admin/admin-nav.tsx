@@ -7,12 +7,14 @@ import {
   Banknote,
   Settings as SettingsIcon,
   Mailbox,
+  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const items: Array<{ to: string; label: string; icon: typeof LayoutDashboard; exact?: boolean }> = [
   { to: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/admin/waitlist", label: "Waitlist", icon: Mailbox },
+  { to: "/admin/investment-requests", label: "Requests", icon: Send },
   { to: "/admin/onboarding", label: "Onboarding", icon: UserPlus },
   { to: "/admin/investors", label: "Investors", icon: Users },
   { to: "/admin/funds", label: "Funds", icon: Wallet },
