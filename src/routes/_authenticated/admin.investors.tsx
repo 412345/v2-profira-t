@@ -28,6 +28,8 @@ function InvestorsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "investors"],
     queryFn: () => listFn(),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
@@ -37,7 +39,8 @@ function InvestorsPage() {
     const list = data ?? [];
     const ql = q.trim().toLowerCase();
     return list.filter((r) => {
-      if (status !== "all" && r.status !== status) return false;
+      if (status === "awaiting" && (r.pending_requests_count ?? 0) === 0) return false;
+      if (status !== "all" && status !== "awaiting" && r.status !== status) return false;
       if (!ql) return true;
       return (
         (r.full_name ?? "").toLowerCase().includes(ql) ||
@@ -76,6 +79,7 @@ function InvestorsPage() {
           </SelectTrigger>
           <SelectContent className="border-[#1F2024] bg-[#14151A] text-white">
             <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="awaiting">Awaiting verification</SelectItem>
             {investorStatuses.map((s) => (
               <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
             ))}
@@ -116,7 +120,17 @@ function InvestorsPage() {
                   <TableCell className="font-mono text-xs text-white">{r.pan}</TableCell>
                   <TableCell className="text-right text-white">{fmtINR(Number(r.amount))}</TableCell>
                   <TableCell className="text-white">{r.tenure_months}m</TableCell>
-                  <TableCell><StatusBadge status={r.status as never} /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <StatusBadge status={r.status as never} />
+                      {(r.pending_requests_count ?? 0) > 0 && (
+                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300 ring-1 ring-amber-500/30">
+                          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
+                          {r.pending_requests_count} pending {fmtINR(r.pending_amount ?? 0)}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
                   <TableCell className="text-xs text-[#B8B8B8]">{fmtDateIST(r.created_at)}</TableCell>
                 </TableRow>
               ))}
@@ -137,7 +151,15 @@ function InvestorsPage() {
                   <div className="truncate font-medium text-white">{r.full_name}</div>
                   <div className="truncate text-xs text-[#B8B8B8]">{r.email}</div>
                 </div>
-                <StatusBadge status={r.status as never} />
+                <div className="flex flex-col items-end gap-1">
+                  <StatusBadge status={r.status as never} />
+                  {(r.pending_requests_count ?? 0) > 0 && (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-medium text-amber-300 ring-1 ring-amber-500/30">
+                      <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" />
+                      {r.pending_requests_count} pending
+                    </span>
+                  )}
+                </div>
               </div>
               <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
                 <div><span className="text-[#B8B8B8]">PAN: </span><span className="font-mono text-white">{r.pan}</span></div>
