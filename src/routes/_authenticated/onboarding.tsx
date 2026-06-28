@@ -19,6 +19,161 @@ const SURFACE = "#0B0C10";
 const BORDER = "#1F2024";
 const SECONDARY = "#B8B8B8";
 
+const USER_AGREEMENT = `USER AGREEMENT & TERMS OF SERVICE
+
+THIS USER AGREEMENT ("Agreement") is a legally binding contract entered into between the User ("Investor", "You", "Your") and the Platform ("Company", "We", "Us", "Our") upon Your electronic acceptance through the platform interface.
+
+1. DEFINITIONS & INTERPRETATION
+
+"Platform" means the digital investment management system operated by the Company, including all associated websites, applications, and services.
+"Investment Amount" means the principal sum deposited by the User for discretionary management.
+"Gross Profits" means the total returns generated from the deployment of the Investment Amount in the specified Asset Classes.
+"Net Profits" means Gross Profits less all applicable deductions, fees, charges, and withholdings as specified herein.
+"Compliance Charges" means the aggregate of Tax Deducted at Source (TDS), Goods and Services Tax (GST), stamp duties, and other statutory levies as may be applicable from time to time.
+"Tenure" means the lock-in period during which the Investment Amount shall remain under management.
+
+2. INVESTMENT PARAMETERS & PROFIT STRUCTURE
+
+2.1 Asset Classes: Foreign Exchange (Forex) and Gold (Commodities), traded through regulated exchanges and over-the-counter markets.
+
+2.2 Management Type: Discretionary Professional Management. The User hereby grants the Company full and unfettered authority to execute trades, allocate positions, and manage risk parameters without requiring prior consultation or consent for individual transactions.
+
+2.3 Tenure: Minimum 6 (Six) months; Maximum 12 (Twelve) months. The User acknowledges that the Investment Amount shall remain locked for the agreed Tenure, and no premature withdrawal, redemption, or liquidation shall be permitted except as provided under Clause 7 herein.
+
+2.4 Profit Distribution Framework:
+
+(a) The Platform projects Gross Profits of up to 10% (Ten percent) per month on the Investment Amount, based on historical performance data and prevailing market conditions.
+
+(b) The User expressly acknowledges and agrees that the said 10% figure represents a projected return based on past performance and is NOT a guaranteed, fixed, or assured return. Actual returns may vary significantly, and the possibility of zero or negative returns exists.
+
+(c) From the Gross Profits, the Company shall deduct Compliance Charges of 3% (Three percent) of the Gross Profits, comprising:
+
+   (i) Tax Deducted at Source (TDS) as per applicable provisions of the Income Tax Act, 1961;
+   (ii) Goods and Services Tax (GST) or other indirect taxes as may be statutorily leviable;
+   (iii) Stamp duty, transaction charges, and other regulatory levies;
+   (iv) Any other statutory charges imposed by governmental or regulatory authorities.
+
+(d) The Net Profits distributable to the User shall be calculated as:
+
+   NET PROFITS = GROSS PROFITS - COMPLIANCE CHARGES (3% of Gross Profits)
+
+(e) The User shall receive the Net Profits, being approximately 97% (Ninety-seven percent) of the Gross Profits, subject to the actual performance of the underlying assets.
+
+2.5 Risk Profile: HIGH RISK. The Asset Classes are subject to absolute market volatility, geopolitical events, macroeconomic fluctuations, and systemic liquidity risks. The User acknowledges that capital depreciation is a real and present possibility.
+
+3. USER REPRESENTATIONS, WARRANTIES & DECLARATIONS
+
+By electronically accepting this Agreement, the User represents, warrants, and declares that:
+
+3.1 The User is a natural person of legal capacity (18 years or above) or a duly incorporated entity with authority to enter into binding contracts.
+
+3.2 The User has independently evaluated the risks associated with Forex and gold trading, possesses adequate financial literacy, and understands that past performance is not indicative of future results.
+
+3.3 The Investment Amount represents surplus funds not required for immediate living expenses, debt obligations, or emergency contingencies.
+
+3.4 The User is not relying on any oral or written representation, warranty, or guarantee of fixed returns, capital protection, or profit assurance made by any agent, representative, or affiliate of the Company.
+
+3.5 The User enters into this Agreement voluntarily, without coercion, undue influence, or misrepresentation, and has had sufficient opportunity to seek independent legal and financial advice.
+
+4. DISCRETIONARY MANAGEMENT AUTHORITY
+
+4.1 The User hereby appoints the Company as its discretionary investment manager with full authority to:
+
+   (a) Select, purchase, sell, hold, or otherwise deal in Forex and gold instruments;
+   (b) Utilize leverage, hedging strategies, and derivative instruments as deemed appropriate;
+   (c) Allocate capital across multiple strategies, timeframes, and market conditions;
+   (d) Engage sub-advisors, brokers, and clearing agents as necessary.
+
+4.2 The Company shall exercise its discretion in a manner consistent with professional standards and applicable regulations, but the User acknowledges that no degree of professional care can eliminate market risk.
+
+5. MARKET RISK DISCLOSURE & LIABILITY LIMITATION
+
+5.1 ABSOLUTE MARKET RISK: The User acknowledges that Forex and gold markets are inherently volatile and subject to rapid price movements. Factors including but not limited to geopolitical tensions, central bank policies, macroeconomic data releases, currency fluctuations, and systemic liquidity events can cause significant capital depreciation.
+
+5.2 NO GUARANTEE: The Company does not guarantee, assure, or warrant any specific rate of return, capital preservation, or profit. The projected 10% monthly return is illustrative and based on historical data, not a promise or contractual obligation.
+
+5.3 LIABILITY LIMITATION: To the fullest extent permitted by law, the Company shall not be liable for:
+
+   (a) Losses arising from ordinary market movements, volatility, or unforeseen events;
+   (b) Losses due to force majeure events including wars, natural disasters, pandemics, or regulatory changes;
+   (c) Indirect, consequential, or punitive damages;
+   (d) Losses exceeding the Investment Amount deposited by the User.
+
+6. LOCK-IN, MATURITY & REDEMPTION
+
+6.1 LOCK-IN PERIOD: The Investment Amount shall remain locked for the agreed Tenure (6-12 months). During this period, the User shall not be entitled to withdraw, redeem, or liquidate the Investment Amount or any accrued profits.
+
+6.2 EARLY REDEMPTION: Notwithstanding the foregoing, early redemption may be permitted solely at the Company's discretion, subject to:
+
+   (a) A minimum lock-in of 3 (Three) months;
+   (b) Administrative penalties of up to 5% (Five percent) of the Investment Amount;
+   (c) Forfeiture of all accrued profits;
+   (d) Deduction of actual transaction costs incurred by the Company.
+
+6.3 MATURITY PAYOUT: Upon completion of the Tenure, the Company shall:
+
+   (a) Calculate the Gross Profits generated during the Tenure;
+   (b) Deduct Compliance Charges (3% of Gross Profits) as specified in Clause 2.4(c);
+   (c) Credit the Net Profits to the User's registered bank account within 7 (Seven) business days;
+   (d) Return the principal Investment Amount, unless the User opts for rollover reinvestment.
+
+7. COMPLIANCE CHARGES & TAXATION
+
+7.1 The User expressly consents to the deduction of Compliance Charges (3% of Gross Profits) from the distributable profits, comprising TDS, GST, and other statutory levies as detailed in Clause 2.4(c).
+
+7.2 The Company shall issue appropriate tax certificates (TDS certificates, GST invoices) within the statutory timelines prescribed under applicable laws.
+
+7.3 The User shall be solely responsible for:
+
+   (a) Disclosing investment income in their personal or corporate tax returns;
+   (b) Paying any additional tax liability arising from the investment;
+   (c) Complying with foreign exchange regulations, anti-money laundering laws, and other applicable statutes.
+
+8. DISPUTE RESOLUTION & GOVERNING LAW
+
+8.1 This Agreement shall be governed by and construed in accordance with the laws of India.
+
+8.2 Any dispute, controversy, or claim arising out of or relating to this Agreement shall be resolved through the following escalation matrix:
+
+   TIER 1 - INTERNAL REDRESSAL:
+   The User shall lodge a written complaint through the Platform's Grievance Redressal Portal. The Company's Internal Complaints Committee shall investigate and issue a reasoned resolution within 30 (Thirty) business days.
+
+   TIER 2 - EXTERNAL ESCALATION:
+   If the dispute remains unresolved at Tier 1, either party may escalate the matter to:
+
+   (a) The Securities and Exchange Board of India (SEBI) or other relevant regulatory authority;
+   (b) The competent courts having jurisdiction over the Company's registered office.
+
+8.3 The User agrees that prior to initiating any legal proceedings, the dispute resolution mechanism specified herein shall be exhausted in good faith.
+
+9. MISCELLANEOUS PROVISIONS
+
+9.1 AMENDMENT: The Company reserves the right to amend this Agreement with 30 (Thirty) days' prior notice. Continued use of the Platform after such notice constitutes acceptance of the amended terms.
+
+9.2 SEVERABILITY: If any provision of this Agreement is held invalid or unenforceable, the remaining provisions shall continue in full force and effect.
+
+9.3 ENTIRE AGREEMENT: This Agreement constitutes the entire understanding between the parties and supersedes all prior agreements, representations, or understandings.
+
+9.4 DIGITAL EXECUTION: By checking the acceptance box on the Platform interface, the User acknowledges that this electronic signature holds the same legal validity, binding effect, and evidentiary value as a physical wet-ink signature, in accordance with the Information Technology Act, 2000.
+
+10. ACKNOWLEDGMENT & ACCEPTANCE
+
+THE USER HEREBY ACKNOWLEDGES THE FOLLOWING:
+
+1. I have read, understood, and agree to be bound by all terms and conditions of this Agreement.
+
+2. I understand that the projected 10% monthly return is not guaranteed and is subject to market risks.
+
+3. I consent to the deduction of 3% Compliance Charges (TDS, GST, etc.) from my Gross Profits.
+
+4. I acknowledge that my Investment Amount is subject to a minimum 6-month lock-in period.
+
+5. I understand that Forex and gold trading carry high risk, including the possibility of capital loss.
+
+6. I confirm that I am investing surplus funds not required for essential living expenses.
+
+7. I have had the opportunity to seek independent legal and financial advice before accepting this Agreement.`;
+
 type StepKey = 0 | 1 | 2 | 3 | 4;
 type State = {
   step: StepKey;
@@ -493,13 +648,8 @@ function StepTerms({ state, dispatch }: { state: State; dispatch: React.Dispatch
       nextDisabled={!allChecked || !state.transaction_id || !state.paid}
       busy={m.isPending}
     >
-      <div className="max-h-40 overflow-y-auto rounded-xl border p-3 text-xs" style={{ borderColor: BORDER, background: "#0F1014", color: SECONDARY }}>
-        <p className="font-semibold text-white">Investment Terms & Conditions</p>
-        <p className="mt-1">
-          By investing, you acknowledge that returns are projections based on PROFIRA's forex/gold trading strategy and are not guaranteed.
-          Principal will be returned at maturity along with accrued returns. Monthly distributions are subject to trading performance.
-          You confirm the source of funds is legitimate and the bank account provided is held in your name.
-        </p>
+      <div className="max-h-72 overflow-y-auto rounded-xl border p-3 text-xs" style={{ borderColor: BORDER, background: "#0F1014", color: SECONDARY }}>
+        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-white/80">{USER_AGREEMENT}</pre>
       </div>
       <div className="mt-4 space-y-2.5">
         <Check3 label="I agree to Investment Terms and Conditions" checked={state.agree1} onChange={(v) => dispatch({ type: "set", patch: { agree1: v } })} />
