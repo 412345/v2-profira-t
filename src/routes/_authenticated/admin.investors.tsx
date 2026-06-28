@@ -28,6 +28,8 @@ function InvestorsPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "investors"],
     queryFn: () => listFn(),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
@@ -37,7 +39,8 @@ function InvestorsPage() {
     const list = data ?? [];
     const ql = q.trim().toLowerCase();
     return list.filter((r) => {
-      if (status !== "all" && r.status !== status) return false;
+      if (status === "awaiting" && (r.pending_requests_count ?? 0) === 0) return false;
+      if (status !== "all" && status !== "awaiting" && r.status !== status) return false;
       if (!ql) return true;
       return (
         (r.full_name ?? "").toLowerCase().includes(ql) ||
@@ -76,6 +79,7 @@ function InvestorsPage() {
           </SelectTrigger>
           <SelectContent className="border-[#1F2024] bg-[#14151A] text-white">
             <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="awaiting">Awaiting verification</SelectItem>
             {investorStatuses.map((s) => (
               <SelectItem key={s} value={s} className="capitalize">{s}</SelectItem>
             ))}
