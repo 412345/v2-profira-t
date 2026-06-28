@@ -11,6 +11,10 @@ import { WaitlistDialog } from "@/components/waitlist-dialog";
 
 export const Route = createFileRoute("/signin")({
   ssr: false,
+  validateSearch: (s: Record<string, unknown>) => ({
+    email: typeof s.email === "string" ? s.email : undefined,
+    mode: s.mode === "signup" ? ("signup" as const) : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — PROFIRA" },
@@ -22,8 +26,9 @@ export const Route = createFileRoute("/signin")({
 
 function SignInPage() {
   const navigate = useNavigate();
-  const [tab, setTab] = useState<"signin" | "signup">("signin");
-  const [email, setEmail] = useState("");
+  const search = Route.useSearch();
+  const [tab, setTab] = useState<"signin" | "signup">(search.mode === "signup" ? "signup" : "signin");
+  const [email, setEmail] = useState(search.email ?? "");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
