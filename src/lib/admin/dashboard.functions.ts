@@ -27,7 +27,8 @@ export const getDashboardStats = createServerFn({ method: "GET" })
     ]);
 
     const pendingWaitlist = waitlistRes.count ?? 0;
-    const totalAum = (fundsRes.data ?? []).reduce((s, f) => s + Number(f.aum), 0);
+    void fundsRes;
+    const totalAum = (reqApprovedRes.data ?? []).reduce((s, r) => s + Number(r.amount), 0);
     const activeInvestors = (investorsRes.data ?? []).filter((i) => i.status === "active").length;
     const pendingPayouts = (payoutsRes.data ?? [])
       .filter((p) => p.status === "pending")
