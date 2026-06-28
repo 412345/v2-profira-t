@@ -648,13 +648,8 @@ function StepTerms({ state, dispatch }: { state: State; dispatch: React.Dispatch
       nextDisabled={!allChecked || !state.transaction_id || !state.paid}
       busy={m.isPending}
     >
-      <div className="max-h-40 overflow-y-auto rounded-xl border p-3 text-xs" style={{ borderColor: BORDER, background: "#0F1014", color: SECONDARY }}>
-        <p className="font-semibold text-white">Investment Terms & Conditions</p>
-        <p className="mt-1">
-          By investing, you acknowledge that returns are projections based on PROFIRA's forex/gold trading strategy and are not guaranteed.
-          Principal will be returned at maturity along with accrued returns. Monthly distributions are subject to trading performance.
-          You confirm the source of funds is legitimate and the bank account provided is held in your name.
-        </p>
+      <div className="max-h-72 overflow-y-auto rounded-xl border p-3 text-xs" style={{ borderColor: BORDER, background: "#0F1014", color: SECONDARY }}>
+        <pre className="whitespace-pre-wrap font-sans text-xs leading-relaxed text-white/80">{USER_AGREEMENT}</pre>
       </div>
       <div className="mt-4 space-y-2.5">
         <Check3 label="I agree to Investment Terms and Conditions" checked={state.agree1} onChange={(v) => dispatch({ type: "set", patch: { agree1: v } })} />
