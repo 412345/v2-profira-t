@@ -132,12 +132,18 @@ function Waitlist() {
             </Link>
           </div>
 
-          <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
-            <Lock className="h-3 w-3" strokeWidth={1.75} />
-            Applications reviewed within 24 hours
-          </p>
+          <div className="mt-3 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              className="text-[11px] font-medium text-white/50 underline-offset-4 transition hover:text-white/80 hover:underline"
+            >
+              Contact Us
+            </button>
+          </div>
         </section>
       </main>
+
 
       <style>{`
         @keyframes float {
