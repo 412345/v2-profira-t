@@ -18,7 +18,7 @@ export const listInvestmentRequests = createServerFn({ method: "GET" })
     let query = context.supabase
       .from("investment_requests")
       .select(
-        "id, investor_id, amount, transaction_id, status, reference_number, created_at, approved_at, notes, investors(full_name, email, phone)",
+        "id, investor_id, amount, transaction_id, status, reference_number, created_at, approved_at, notes, confirmation_email_status, confirmation_email_sent_at, investors(full_name, email, phone)",
       )
       .order("created_at", { ascending: false });
     if (data.status !== "all") query = query.eq("status", data.status);
