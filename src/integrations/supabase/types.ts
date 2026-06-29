@@ -138,6 +138,8 @@ export type Database = {
           amount: number
           approved_at: string | null
           approved_by: string | null
+          confirmation_email_sent_at: string | null
+          confirmation_email_status: string
           created_at: string
           id: string
           investor_id: string
@@ -152,6 +154,8 @@ export type Database = {
           amount: number
           approved_at?: string | null
           approved_by?: string | null
+          confirmation_email_sent_at?: string | null
+          confirmation_email_status?: string
           created_at?: string
           id?: string
           investor_id: string
@@ -166,6 +170,8 @@ export type Database = {
           amount?: number
           approved_at?: string | null
           approved_by?: string | null
+          confirmation_email_sent_at?: string | null
+          confirmation_email_status?: string
           created_at?: string
           id?: string
           investor_id?: string
