@@ -3,12 +3,14 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyRole, type AppRole } from "@/lib/auth/role.functions";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, Headphones } from "lucide-react";
+import { CustomerSupportModal } from "@/components/customer-support-modal";
 
 export function AuthPill() {
   const [mounted, setMounted] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [, setRole] = useState<AppRole | null>(null);
+  const [supportOpen, setSupportOpen] = useState(false);
   const fetchRole = useServerFn(getMyRole);
   const navigate = useNavigate();
 
