@@ -13,9 +13,11 @@ import {
   LineChart as LineChartIcon,
   Wallet,
   Star,
+  Headphones,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
+import { CustomerSupportModal } from "@/components/customer-support-modal";
 
 import { CandleChart, HeroCandleBackdrop, MiniSparkline } from "@/components/profira/candles";
 
