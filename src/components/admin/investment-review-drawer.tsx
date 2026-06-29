@@ -93,6 +93,14 @@ export function InvestmentReviewDrawer({
     },
     onError: (e: Error) => toast.error(e.message),
   });
+  const sendConfirm = useMutation({
+    mutationFn: (requestId: string) => confirmEmailFn({ data: { requestId } }),
+    onSuccess: () => {
+      toast.success("Confirmation email sent");
+      invalidate();
+    },
+    onError: (e: Error) => toast.error(e.message || "Email send failed"),
+  });
 
   const inv = (data as unknown as { investors: Record<string, unknown> | null } | null)?.investors as
     | {
