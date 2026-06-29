@@ -104,6 +104,14 @@ function HomePage() {
           <img src="/profira-logo.png" alt="PROFIRA" className="h-7 w-auto" />
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/90 transition hover:border-white/45 hover:bg-white/[0.08]"
+            >
+              <Headphones className="h-3.5 w-3.5" />
+              Contact Us
+            </button>
+            <button
               aria-label="Notifications"
               className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
             >
@@ -112,6 +120,7 @@ function HomePage() {
             </button>
             <button
               aria-label="Profile"
+              onClick={handleProfileClick}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
             >
               <User className="h-4 w-4" />
