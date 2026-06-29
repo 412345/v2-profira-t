@@ -152,6 +152,7 @@ function Waitlist() {
         }
       `}</style>
       <WaitlistDialog open={open} onOpenChange={setOpen} />
+      <CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />
     </div>
   );
 }
