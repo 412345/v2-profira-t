@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { WaitlistDialog } from "@/components/waitlist-dialog";
+import { CustomerSupportModal } from "@/components/customer-support-modal";
 
 
 
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
 
 function Waitlist() {
   const [open, setOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   return (
 
     <div className="fixed inset-0 overflow-hidden bg-black font-sans text-white">
