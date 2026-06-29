@@ -74,6 +74,7 @@ type Range = (typeof ranges)[number];
 function HomePage() {
   const navigate = useNavigate();
   const [amount, setAmount] = useState(10000);
+  const [supportOpen, setSupportOpen] = useState(false);
   const monthly = useMemo(() => amount * 0.10, [amount]);
   const sixMonth = monthly * 6;
   const [range, setRange] = useState<Range>("1M");
