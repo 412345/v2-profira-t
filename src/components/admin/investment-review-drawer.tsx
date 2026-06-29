@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState, useEffect } from "react";
-import { Loader2, FileText, User, Banknote, Calculator } from "lucide-react";
+import { Loader2, FileText, User, Banknote, Calculator, Mail, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,6 +11,7 @@ import {
   approveInvestmentRequest,
   rejectInvestmentRequest,
 } from "@/lib/admin/investment-requests.functions";
+import { sendInvestmentConfirmationEmail } from "@/lib/admin/email.functions";
 import { fmtINR, fmtDateIST } from "@/lib/admin/format";
 
 function mask(value: string | null | undefined, keep = 4): string {
