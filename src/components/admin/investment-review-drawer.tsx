@@ -53,6 +53,7 @@ export function InvestmentReviewDrawer({
   const detailFn = useServerFn(getInvestmentRequestDetail);
   const approveFn = useServerFn(approveInvestmentRequest);
   const rejectFn = useServerFn(rejectInvestmentRequest);
+  const confirmEmailFn = useServerFn(sendInvestmentConfirmationEmail);
   const qc = useQueryClient();
   const [notes, setNotes] = useState("");
 
