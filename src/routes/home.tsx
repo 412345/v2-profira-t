@@ -417,6 +417,7 @@ function HomePage() {
           </div>
         </section>
       </div>
+      <CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />
     </main>
   );
 }
