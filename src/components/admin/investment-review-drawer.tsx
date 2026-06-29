@@ -201,14 +201,64 @@ export function InvestmentReviewDrawer({
                 </Button>
               </div>
             ) : (
-              <div className="rounded-xl border border-[#1F2024] bg-[#0B0C10] p-3 text-xs text-[#B8B8B8]">
-                Already <span className="capitalize text-white">{data.status}</span>
-                {data.approved_at ? ` on ${fmtDateIST(data.approved_at)}` : ""}.
+              <div className="space-y-3">
+                <div className="rounded-xl border border-[#1F2024] bg-[#0B0C10] p-3 text-xs text-[#B8B8B8]">
+                  Already <span className="capitalize text-white">{data.status}</span>
+                  {data.approved_at ? ` on ${fmtDateIST(data.approved_at)}` : ""}.
+                </div>
+                {data.status === "approved" && (
+                  <Section icon={<Mail className="h-4 w-4" />} title="Investor Confirmation Email">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 text-xs">
+                        <EmailStatusPill status={(data as unknown as { confirmation_email_status?: string | null }).confirmation_email_status} />
+                        {(data as unknown as { confirmation_email_sent_at?: string | null }).confirmation_email_sent_at && (
+                          <span className="text-[#B8B8B8]">
+                            sent {fmtDateIST((data as unknown as { confirmation_email_sent_at: string }).confirmation_email_sent_at)}
+                          </span>
+                        )}
+                      </div>
+                      <Button
+                        size="sm"
+                        onClick={() => sendConfirm.mutate(data.id)}
+                        disabled={sendConfirm.isPending}
+                        className="bg-[#D61F3A] text-white hover:bg-[#B8172F]"
+                      >
+                        {sendConfirm.isPending ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Send className="mr-2 h-3.5 w-3.5" />
+                        )}
+                        {(data as unknown as { confirmation_email_status?: string | null }).confirmation_email_status === "sent"
+                          ? "Resend email"
+                          : "Send confirmation email"}
+                      </Button>
+                    </div>
+                    <p className="mt-3 text-[11px] leading-relaxed text-[#6B7280]">
+                      Sends the branded payment-confirmation email (invoice, checklist, portfolio link) to{" "}
+                      <span className="text-[#B8B8B8]">{inv?.email ?? "the investor"}</span>.
+                    </p>
+                  </Section>
+                )}
               </div>
             )}
           </div>
         ) : null}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function EmailStatusPill({ status }: { status?: string | null }) {
+  const s = status ?? "pending";
+  const map: Record<string, string> = {
+    sent: "bg-emerald-500/10 text-emerald-300 ring-emerald-500/20",
+    failed: "bg-[#D61F3A]/15 text-[#ff8a98] ring-[#D61F3A]/30",
+    pending: "bg-amber-500/10 text-amber-300 ring-amber-500/20",
+  };
+  const label = s === "sent" ? "emailed" : s === "failed" ? "email failed" : "not sent yet";
+  return (
+    <span className={`inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ring-1 ${map[s] ?? map.pending}`}>
+      <Send className="h-2.5 w-2.5" /> {label}
+    </span>
   );
 }
