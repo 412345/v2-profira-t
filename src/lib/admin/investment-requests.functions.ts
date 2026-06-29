@@ -65,6 +65,14 @@ export const approveInvestmentRequest = createServerFn({ method: "POST" })
       _notes: data.notes,
     });
     if (error) throw new Error(error.message);
+    // Best-effort: fire the investor payment-confirmation email. Do not roll
+    // back the approval if the email fails — admin can resend from the UI.
+    try {
+      const { sendInvestmentConfirmationForRequestId } = await import("./email.server");
+      await sendInvestmentConfirmationForRequestId(context.supabase, data.id);
+    } catch (e) {
+      console.error("[approveInvestmentRequest] confirmation email failed:", e);
+    }
     return result as {
       ok: boolean;
       document_id: string;
