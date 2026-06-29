@@ -120,7 +120,7 @@ function HomePage() {
             </button>
             <button
               aria-label="Profile"
-              onClick={handleProfileClick}
+              onClick={handleStartInvesting}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
             >
               <User className="h-4 w-4" />
