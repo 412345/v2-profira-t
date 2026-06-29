@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Lock, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { WaitlistDialog } from "@/components/waitlist-dialog";
+import { CustomerSupportModal } from "@/components/customer-support-modal";
 
 
 
@@ -27,6 +28,7 @@ export const Route = createFileRoute("/")({
 
 function Waitlist() {
   const [open, setOpen] = useState(false);
+  const [supportOpen, setSupportOpen] = useState(false);
   return (
 
     <div className="fixed inset-0 overflow-hidden bg-black font-sans text-white">
@@ -130,12 +132,18 @@ function Waitlist() {
             </Link>
           </div>
 
-          <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
-            <Lock className="h-3 w-3" strokeWidth={1.75} />
-            Applications reviewed within 24 hours
-          </p>
+          <div className="mt-3 flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              className="text-[11px] font-medium text-white/50 underline-offset-4 transition hover:text-white/80 hover:underline"
+            >
+              Contact Us
+            </button>
+          </div>
         </section>
       </main>
+
 
       <style>{`
         @keyframes float {
@@ -144,6 +152,7 @@ function Waitlist() {
         }
       `}</style>
       <WaitlistDialog open={open} onOpenChange={setOpen} />
+      <CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />
     </div>
   );
 }

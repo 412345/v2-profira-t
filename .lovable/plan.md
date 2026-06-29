@@ -1,69 +1,57 @@
-# Investment Approval Confirmation Email
+# Customer Support Modal — Revised Plan
 
-Send a branded "payment confirmed" email to the investor when an admin approves their investment request. Auto-fire on approval, plus a manual "Send/Resend Email" button in the review drawer for already-approved requests (or when an auto-send failed). Uses the same Resend sender as the waitlist email (`onboarding@mail.profiratrade.in`).
+Add a unified, lightweight Customer Support popup triggered from two places, with no changes to routing, schemas, or backend.
 
-## Email content (professionally drafted)
+## New component
 
-- **Subject**: `{FirstName}, your investment of ₹{amount} is confirmed`
-- **Header**: PROFIRA TRADE · Private Investment Desk (same shell as waitlist email)
-- **Hero line**: "Congratulations, {Name} — your capital has been received and deployed."
-- **Body**: Short paragraph confirming the principal is now live in the managed strategy and monthly payouts are scheduled.
-- **Payment Invoice block** (boxed, monospace where relevant):
-  - Reference No. (e.g. `PRT-2026-000123`)
-  - Transaction / UTR ID
-  - Amount Confirmed (₹ formatted)
-  - Date of Confirmation (IST)
-  - Tenure: 6 months · Monthly payout: 10%
-  - Projected monthly payout (₹) and maturity total (₹)
-- **Verification checklist** (✓ ticked items):
-  - KYC & banking details verified
-  - Agreement & Terms accepted
-  - Payment received and reconciled
-  - Investment activated on the managed desk
-- **CTA button** (#D61F3A): `VIEW PORTFOLIO` → `https://www.profiratrade.in/portfolio`
-- **Footer note**: "Your portfolio and dashboard have been updated. Sign in any time to track real-time performance, monthly payouts, and download your agreement."
-- Support line + Profira footer (same as waitlist email).
-- Plain-text alternative for deliverability.
+`src/components/customer-support-modal.tsx`
+- Controlled dialog: props `{ open: boolean; onOpenChange: (v: boolean) => void }`.
+- Built on existing shadcn `Dialog` (already in project), centered, `max-w-[420px]`, `rounded-2xl`, dark surface using PROFIRA tokens (`#14151A` surface, `#D61F3A` accent, white text, `#B8B8B8` secondary).
+- Header: uppercase `CUSTOMER SUPPORT`, tracked, semibold, thin accent rule below.
+- Body — two rows, full-width cards (`rounded-xl`, `border border-white/[0.06]`, hover lift):
+  1. **WhatsApp** — `MessageCircle` (lucide) in green-tinted badge; label "WhatsApp / Telegram" + phone `+91 90062 82854`. Anchor: `https://wa.me/919006282854?text=Hi%20PROFIRA%20Support` with `target="_blank"` + `rel="noopener noreferrer"`.
+  2. **Instagram** — `Instagram` (lucide) in pink→orange gradient badge; label "Instagram" + sublabel "DM us for any support". Anchor: `https://www.instagram.com/profiratrade?igsh=bjhreXBleXR2anhn`, same safe target.
+- Footer: centered `We resolve any issues within a few hours.` in `#B8B8B8`, small caps tracking, divider above.
+- Dialog primitives handle X / ESC / overlay-click close.
 
-## Trigger behavior
+## Trigger placements
 
-1. **Automatic** — when admin clicks "Approve & Generate Documents" in the review drawer, the email fires immediately after the approval RPC succeeds. Email failure does NOT roll back the approval; status is recorded as `failed` and the admin can resend.
-2. **Manual** — for any `approved` request, the drawer shows a "Send confirmation email" / "Resend email" button with the current status pill (sent / failed / pending), mirroring the waitlist UI pattern.
+### 1. `src/routes/index.tsx` (public homepage)
+- Add `useState` `supportOpen`.
+- Remove the existing block:
+  ```tsx
+  <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-white/50">
+    <Lock className="h-3 w-3" strokeWidth={1.75} />
+    Applications reviewed within 24 hours
+  </p>
+  ```
+- Replace with a subtle `button` matching the same `text-[11px] text-white/50 hover:text-white/80 underline-offset-4 hover:underline` reading `Contact Us`, that calls `setSupportOpen(true)`. Drop the now-unused `Lock` import.
+- Render `<CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />` once inside the root container.
 
-## Technical changes
+### 2. `src/components/auth-pill.tsx` (the "Dashboard" pill in the authenticated header)
+This is the actual target node — the `LayoutDashboard` + "Dashboard" pill rendered by `AuthPill` (used on the portfolio/header). Per the corrected instruction:
+- Keep the pill's exact layout, sizing, border, background, hover states, and gap relative to the sign-out button — only swap its semantics.
+- Convert the `Link` to a `button type="button"` (so it opens a modal instead of navigating). All other classNames preserved verbatim.
+- Replace icon import `LayoutDashboard` → `Headphones` from lucide-react; keep `h-3 w-3` sizing.
+- Label text "Dashboard" → "Contact Us".
+- Add local `useState` `supportOpen` inside `AuthPill`; `onClick={() => setSupportOpen(true)}`.
+- Render `<CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />` next to the returned fragment.
+- Remove now-dead `dashboardTo` / `role` / `getMyRole` usage **only if** nothing else needs them; otherwise leave the role-fetch effect intact and just stop using `dashboardTo`. Safer choice: leave the role hook intact (no behavior change), simply unused for the pill's `to=` — minimizes risk to auth state logic.
+- Sign-out button untouched. Signed-out branch (`Sign in` link) untouched. Circular User avatar in `portfolio.tsx` Header untouched.
 
-### 1. Database migration
-Add to `public.investment_requests`:
-- `confirmation_email_status text NOT NULL DEFAULT 'pending'`
-- `confirmation_email_sent_at timestamptz`
+Note on scope: `AuthPill` is the shared component that renders this pill wherever it appears in authenticated headers; the visible change therefore consistently applies wherever the same pill is shown.
 
-(No new RLS/grants — existing policies on the table cover it.)
+## Safety / scope guarantees
 
-### 2. `src/lib/admin/email.server.ts`
-Add `sendInvestmentConfirmationForRequestId(supabase, requestId)`:
-- Reads the `investment_requests` row joined with `investors(full_name, email, phone)`.
-- Builds HTML + text via a new `buildConfirmationEmail()` helper that reuses the same brand shell, colors, and FROM address as the waitlist email.
-- POSTs to Resend API with `from = onboarding@mail.profiratrade.in` (env-overridable via `RESEND_FROM_ADDRESS`).
-- Updates `confirmation_email_status` to `sent` (+ timestamp) or `failed`, wrapped in try/catch.
-
-### 3. `src/lib/admin/email.functions.ts`
-Add `sendInvestmentConfirmationEmail` serverFn (mirrors `sendApprovalEmail`):
-- `.middleware([requireSupabaseAuth])` + `assertStaff`
-- Input: `{ requestId: uuid }`
-- Calls `sendInvestmentConfirmationForRequestId(context.supabase, ...)`.
-
-### 4. `src/lib/admin/investment-requests.functions.ts`
-- In `approveInvestmentRequest.handler`: after the successful RPC, best-effort call `sendInvestmentConfirmationForRequestId(context.supabase, data.id)` inside a try/catch — log on failure, return the original RPC result unchanged so the UI flow doesn't break.
-- Extend `listInvestmentRequests` select to include `confirmation_email_status, confirmation_email_sent_at`.
-- Extend `getInvestmentRequestDetail` (already `select *`, so it picks them up automatically — no change).
-
-### 5. `src/components/admin/investment-review-drawer.tsx`
-- Import `sendInvestmentConfirmationEmail`; wire a mutation.
-- For `data.status === "approved"`: show an "Email confirmation" section with a small status pill (sent / failed / pending) plus a button labeled "Send confirmation email" (or "Resend email" when status is `sent`/`failed`), with success/error toasts. Reuse the existing `EmailPill` styling from `admin.waitlist.tsx` (copy the small component into a shared spot or inline it locally — small, no shared module needed).
+- Only files edited:
+  - `src/routes/index.tsx`
+  - `src/components/auth-pill.tsx`
+  - `src/components/customer-support-modal.tsx` (new)
+- `src/routes/_authenticated/portfolio.tsx` is **not** modified.
+- No route files added, no `routeTree.gen.ts` touched, no server functions, no schema/migration/RLS changes, no env/secrets, no new dependencies.
+- All external links use `target="_blank" rel="noopener noreferrer"`.
+- State is purely local `useState`.
 
 ## Out of scope
 
-- Waitlist email (already working).
-- Rejection emails.
-- Email queue / Lovable Emails migration — sticking with the existing direct Resend integration per current setup.
-- Changes to RLS, the approve RPC, document generation, or payout scheduling.
+- Profile avatar, sign-out button, admin pages, emails, auth flows, analytics.

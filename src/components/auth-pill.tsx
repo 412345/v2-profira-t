@@ -3,12 +3,14 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { useServerFn } from "@tanstack/react-start";
 import { getMyRole, type AppRole } from "@/lib/auth/role.functions";
-import { LogOut, LayoutDashboard } from "lucide-react";
+import { LogOut, Headphones } from "lucide-react";
+import { CustomerSupportModal } from "@/components/customer-support-modal";
 
 export function AuthPill() {
   const [mounted, setMounted] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
-  const [role, setRole] = useState<AppRole | null>(null);
+  const [, setRole] = useState<AppRole | null>(null);
+  const [supportOpen, setSupportOpen] = useState(false);
   const fetchRole = useServerFn(getMyRole);
   const navigate = useNavigate();
 
@@ -62,25 +64,27 @@ export function AuthPill() {
     navigate({ to: "/", replace: true });
   }
 
-  const dashboardTo = role === "admin" || role === "staff" ? "/admin" : "/portfolio";
-
   return (
-    <div className="flex items-center gap-2">
-      <Link
-        to={dashboardTo}
-        className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur-sm transition hover:border-white/50 hover:bg-white/[0.08]"
-      >
-        <LayoutDashboard className="h-3 w-3" />
-        Dashboard
-      </Link>
-      <button
-        type="button"
-        onClick={signOut}
-        className="flex items-center gap-1.5 rounded-full border border-[#D61F3A]/60 bg-[#D61F3A]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#D61F3A]/20"
-      >
-        <LogOut className="h-3 w-3" />
-        Sign out
-      </button>
-    </div>
+    <>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSupportOpen(true)}
+          className="flex items-center gap-1.5 rounded-full border border-white/25 bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/90 backdrop-blur-sm transition hover:border-white/50 hover:bg-white/[0.08]"
+        >
+          <Headphones className="h-3 w-3" />
+          Contact Us
+        </button>
+        <button
+          type="button"
+          onClick={signOut}
+          className="flex items-center gap-1.5 rounded-full border border-[#D61F3A]/60 bg-[#D61F3A]/10 px-3 py-1.5 text-[12px] font-medium text-white transition hover:bg-[#D61F3A]/20"
+        >
+          <LogOut className="h-3 w-3" />
+          Sign out
+        </button>
+      </div>
+      <CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />
+    </>
   );
 }
