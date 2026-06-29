@@ -16,3 +16,17 @@ export const sendApprovalEmail = createServerFn({ method: "POST" })
     const res = await sendApprovalEmailForWaitlistId(context.supabase, data.waitlistId);
     return { ok: true as const, status: res.status };
   });
+
+const sendConfirmationSchema = z.object({
+  requestId: z.string().uuid(),
+});
+
+export const sendInvestmentConfirmationEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => sendConfirmationSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { sendInvestmentConfirmationForRequestId } = await import("./email.server");
+    const res = await sendInvestmentConfirmationForRequestId(context.supabase, data.requestId);
+    return { ok: true as const, status: res.status };
+  });
