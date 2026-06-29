@@ -12,8 +12,7 @@ export const sendApprovalEmail = createServerFn({ method: "POST" })
   .inputValidator((input: unknown) => sendSchema.parse(input))
   .handler(async ({ data, context }) => {
     await assertStaff(context.supabase, context.userId);
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { sendApprovalEmailForWaitlistId } = await import("./email.server");
-    const res = await sendApprovalEmailForWaitlistId(supabaseAdmin, data.waitlistId);
+    const res = await sendApprovalEmailForWaitlistId(context.supabase, data.waitlistId);
     return { ok: true as const, status: res.status };
   });

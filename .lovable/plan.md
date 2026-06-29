@@ -1,37 +1,39 @@
-## Goal
+## Root cause
 
-Replace the existing waitlist approval email flow with a branded Resend send. Admin clicks Approve (or Send/Retry), the backend builds a polished HTML email using the row's Name/Email/Phone, sends it via Resend from `Profira Trade <onboarding@mail.profiratrade.in>`, updates the waitlist row's email status, and surfaces success/error toasts.
+The waitlist "Send email" flow calls `sendApprovalEmailForWaitlistId` with `supabaseAdmin` (service-role client). `supabaseAdmin` reads `process.env.SUPABASE_SERVICE_ROLE_KEY` lazily on first use and throws the exact error you see when it's missing.
 
-## Files to change
+- On Lovable preview: Lovable Cloud auto-injects `SUPABASE_SERVICE_ROLE_KEY` into the server runtime, so it works.
+- On Vercel: that variable is **not** auto-injected. Your Vercel project only has `VITE_SUPABASE_*` / `SUPABASE_URL` / `SUPABASE_PUBLISHABLE_KEY` / `RESEND_API_KEY`. The service-role key was never added, so the call blows up the moment an admin clicks Send.
 
-- `src/lib/admin/email.server.ts` — rewrite to:
-  - Stop reading the DB `email_templates` row; render the new HTML in-code.
-  - Use the hardcoded sender `Profira Trade <onboarding@mail.profiratrade.in>` (overridable by `RESEND_FROM_ADDRESS` env).
-  - Build the CTA URL `https://www.profiratrade.in/signup?email=<urlencoded recipient>`.
-  - Keep the existing try/catch + waitlist `resend_email_status` / `resend_email_sent_at` updates (already wired to the admin toast logic).
+Nothing about Resend, the email content, or the admin UI is wrong — it dies before the Resend call, while constructing the admin Supabase client.
 
-- `src/routes/signup.tsx` *(new)* — tiny TanStack route that reads `?email=` and redirects to `/signin` in signup mode with the email prefilled (keeps existing auth flow intact, satisfies the email link).
+## Fix (two parts)
 
-- `src/routes/signin.tsx` — on mount, read `email` + `mode=signup` from the URL and set the email field + active tab so the prefill works.
+### Part 1 — Code: stop needing service-role for this flow
 
-## Email design
+The approval-email server fn is already gated by `requireSupabaseAuth` + `assertStaff`, so the calling admin's own Supabase session has full rights via RLS to read the `waitlist` row and update `resend_email_status`. There is no reason to escalate to service-role here.
 
-- Width-constrained (600px) card, white background `#FFFFFF`, charcoal text `#0F1014`, Profira red accent `#D61F3A`, subtle border `#E6E7EB`.
-- Header: "PROFIRA TRADE" wordmark in red, tagline "Private Investment Desk".
-- Greeting: "Welcome aboard, {Name}." + approval confirmation paragraph.
-- "Your registered profile" panel listing Name / Email / Phone for confirmation.
-- Step list (1. Click below 2. Set a secure password 3. Sign in 4. Deploy capital).
-- Centered solid red button "CREATE ACCOUNT" linking to the signup URL with prefilled email; plain-text fallback link underneath.
-- Footer: support contact + small legal line.
-- Plain-text alternative body included so deliverability stays high.
+Change `src/lib/admin/email.functions.ts`:
+- Stop importing `supabaseAdmin`.
+- Pass `context.supabase` (the authenticated staff client from `requireSupabaseAuth`) into `sendApprovalEmailForWaitlistId`.
 
-## Behavior
+`sendApprovalEmailForWaitlistId` already accepts a `SupabaseClient` parameter, so `email.server.ts` needs no changes.
 
-- No new env vars required; `RESEND_API_KEY` already exists. From-address default is the verified `onboarding@mail.profiratrade.in`.
-- Approve action (`setWaitlistStatus` → `approved`) already calls `sendApprovalEmailForWaitlistId`; the admin UI already shows success/failure toasts and a Retry button on failure. No UI changes needed beyond the prefill route.
-- All Resend calls remain wrapped in try/catch; failures mark `resend_email_status = 'failed'` and bubble a descriptive error to the admin toast without breaking the table.
+Result: the Send-email button works on Vercel using only the keys you already have (`SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`) — no service-role required.
+
+### Part 2 — Vercel env (recommended hardening, not blocking)
+
+Even after Part 1, you should still set these in **Vercel → Project → Settings → Environment Variables** (Production + Preview) so any future admin/maintenance code that legitimately needs service-role works:
+
+- `SUPABASE_SERVICE_ROLE_KEY` = your project's service role key
+- Confirm `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `RESEND_API_KEY`, `RESEND_FROM_ADDRESS` (optional) are also present.
+
+Then redeploy. (Lovable Cloud doesn't expose the service-role key in the UI, so you'll need to grab it from wherever you have it stored; if you don't have it, Part 1 alone unblocks the email flow.)
+
+## Files touched
+
+- `src/lib/admin/email.functions.ts` — swap `supabaseAdmin` for `context.supabase`.
 
 ## Out of scope
 
-- No schema migrations, no changes to `email_templates` table (left untouched for back-compat).
-- No changes to auth providers, KYC, or other admin tabs.
+- Email HTML/content, sender address, signup link, RLS policies, admin UI, toast handling — all unchanged.
