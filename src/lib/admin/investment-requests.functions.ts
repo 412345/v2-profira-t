@@ -18,7 +18,7 @@ export const listInvestmentRequests = createServerFn({ method: "GET" })
     let query = context.supabase
       .from("investment_requests")
       .select(
-        "id, investor_id, amount, transaction_id, status, reference_number, created_at, approved_at, notes, investors(full_name, email, phone)",
+        "id, investor_id, amount, transaction_id, status, reference_number, created_at, approved_at, notes, confirmation_email_status, confirmation_email_sent_at, investors(full_name, email, phone)",
       )
       .order("created_at", { ascending: false });
     if (data.status !== "all") query = query.eq("status", data.status);
@@ -65,6 +65,14 @@ export const approveInvestmentRequest = createServerFn({ method: "POST" })
       _notes: data.notes,
     });
     if (error) throw new Error(error.message);
+    // Best-effort: fire the investor payment-confirmation email. Do not roll
+    // back the approval if the email fails — admin can resend from the UI.
+    try {
+      const { sendInvestmentConfirmationForRequestId } = await import("./email.server");
+      await sendInvestmentConfirmationForRequestId(context.supabase, data.id);
+    } catch (e) {
+      console.error("[approveInvestmentRequest] confirmation email failed:", e);
+    }
     return result as {
       ok: boolean;
       document_id: string;
