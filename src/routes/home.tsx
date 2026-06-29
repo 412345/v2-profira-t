@@ -13,9 +13,11 @@ import {
   LineChart as LineChartIcon,
   Wallet,
   Star,
+  Headphones,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { supabase } from "@/integrations/supabase/client";
+import { CustomerSupportModal } from "@/components/customer-support-modal";
 
 import { CandleChart, HeroCandleBackdrop, MiniSparkline } from "@/components/profira/candles";
 
@@ -72,6 +74,7 @@ type Range = (typeof ranges)[number];
 function HomePage() {
   const navigate = useNavigate();
   const [amount, setAmount] = useState(10000);
+  const [supportOpen, setSupportOpen] = useState(false);
   const monthly = useMemo(() => amount * 0.10, [amount]);
   const sixMonth = monthly * 6;
   const [range, setRange] = useState<Range>("1M");
@@ -101,6 +104,14 @@ function HomePage() {
           <img src="/profira-logo.png" alt="PROFIRA" className="h-7 w-auto" />
           <div className="flex items-center gap-2">
             <button
+              type="button"
+              onClick={() => setSupportOpen(true)}
+              className="flex items-center gap-1.5 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1.5 text-[12px] font-medium text-white/90 transition hover:border-white/45 hover:bg-white/[0.08]"
+            >
+              <Headphones className="h-3.5 w-3.5" />
+              Contact Us
+            </button>
+            <button
               aria-label="Notifications"
               className="relative flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
             >
@@ -109,6 +120,7 @@ function HomePage() {
             </button>
             <button
               aria-label="Profile"
+              onClick={handleStartInvesting}
               className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 text-white/80 hover:text-white"
             >
               <User className="h-4 w-4" />
@@ -405,6 +417,7 @@ function HomePage() {
           </div>
         </section>
       </div>
+      <CustomerSupportModal open={supportOpen} onOpenChange={setSupportOpen} />
     </main>
   );
 }
