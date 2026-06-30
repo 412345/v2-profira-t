@@ -67,6 +67,18 @@ function WaitlistPage() {
     onError: (e) => toast.error(e instanceof Error ? e.message : "Resend failed"),
   });
 
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteEntry({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Waitlist entry deleted.");
+      setConfirmDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["admin", "waitlist"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+  });
+
+
   const rows = query.data ?? [];
   const sources = useMemo(() => {
     const s = new Set<string>(["website", "instagram", "linkedin", "referral", "manual"]);
