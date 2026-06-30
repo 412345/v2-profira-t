@@ -41,6 +41,21 @@ function InvestorsPage() {
   const [status, setStatus] = useState<string>("all");
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
+  const qc = useQueryClient();
+  const deleteFn = useServerFn(deleteInvestorAccount);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Investor record deleted.");
+      setConfirmDelete(null);
+      qc.invalidateQueries({ queryKey: ["admin", "investors"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+  });
+
+
   const rows = useMemo(() => {
     const list = data ?? [];
     const ql = q.trim().toLowerCase();
