@@ -155,7 +155,22 @@ function InvestorsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-[#B8B8B8]">{fmtDateIST(r.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setConfirmDelete({ id: r.id, name: r.full_name ?? "this investor" });
+                      }}
+                      className="border-[#D61F3A]/40 bg-transparent text-[#ff8a98] hover:bg-[#D61F3A]/10 hover:text-white"
+                    >
+                      <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete Record
+                    </Button>
+                  </TableCell>
                 </TableRow>
+
               ))}
             </TableBody>
           </Table>
