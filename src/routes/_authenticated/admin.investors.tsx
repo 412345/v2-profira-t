@@ -204,10 +204,49 @@ function InvestorsPage() {
                 <div><span className="text-[#B8B8B8]">Tenure: </span><span className="text-white">{r.tenure_months}m</span></div>
                 <div className="col-span-2"><span className="text-[#B8B8B8]">Amount: </span><span className="text-white">{fmtINR(Number(r.amount))}</span></div>
               </div>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setConfirmDelete({ id: r.id, name: r.full_name ?? "this investor" });
+                  }}
+                  className="border-[#D61F3A]/40 bg-transparent text-[#ff8a98] hover:bg-[#D61F3A]/10 hover:text-white"
+                >
+                  <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete Record
+                </Button>
+              </div>
             </Link>
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent className="border-[#1F2024] bg-[#14151A] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete investor record?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#B8B8B8]">
+              This will permanently delete {confirmDelete?.name} along with all related
+              investment requests, documents, KYC files, and payouts. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-[#1F2024] bg-transparent text-white hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMut.isPending}
+              onClick={() => confirmDelete && deleteMut.mutate(confirmDelete.id)}
+              className="bg-[#D61F3A] text-white hover:bg-[#B8172F]"
+            >
+              {deleteMut.isPending ? "Deleting…" : "Delete Record"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+
