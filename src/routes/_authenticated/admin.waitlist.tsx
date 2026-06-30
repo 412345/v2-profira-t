@@ -27,11 +27,14 @@ function WaitlistPage() {
   const fetchList = useServerFn(listWaitlist);
   const setStatus = useServerFn(setWaitlistStatus);
   const resend = useServerFn(sendApprovalEmail);
+  const deleteEntry = useServerFn(deleteWaitlistEntry);
   const qc = useQueryClient();
 
   const [status, setStatusFilter] = useState<Status>("all");
   const [source, setSource] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
 
   const query = useQuery({
     queryKey: ["admin", "waitlist", status, source, search],
