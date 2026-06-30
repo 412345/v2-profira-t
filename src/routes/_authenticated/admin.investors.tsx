@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Plus } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Search, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +14,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { listInvestors } from "@/lib/admin/investors.functions";
+import { listInvestors, deleteInvestorAccount } from "@/lib/admin/investors.functions";
 import { fmtINR, fmtDateIST } from "@/lib/admin/format";
 import { investorStatuses } from "@/lib/admin/schemas";
+
 
 export const Route = createFileRoute("/_authenticated/admin/investors")({
   component: InvestorsPage,
