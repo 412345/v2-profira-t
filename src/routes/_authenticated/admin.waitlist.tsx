@@ -2,15 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listWaitlist, setWaitlistStatus } from "@/lib/admin/waitlist.functions";
+import { listWaitlist, setWaitlistStatus, deleteWaitlistEntry } from "@/lib/admin/waitlist.functions";
 import { sendApprovalEmail } from "@/lib/admin/email.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Check, X, Copy, Search, Mailbox, Send } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Check, X, Copy, Search, Mailbox, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin/waitlist")({
   component: WaitlistPage,
@@ -22,11 +27,14 @@ function WaitlistPage() {
   const fetchList = useServerFn(listWaitlist);
   const setStatus = useServerFn(setWaitlistStatus);
   const resend = useServerFn(sendApprovalEmail);
+  const deleteEntry = useServerFn(deleteWaitlistEntry);
   const qc = useQueryClient();
 
   const [status, setStatusFilter] = useState<Status>("all");
   const [source, setSource] = useState<string>("all");
   const [search, setSearch] = useState("");
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
 
   const query = useQuery({
     queryKey: ["admin", "waitlist", status, source, search],
@@ -58,6 +66,18 @@ function WaitlistPage() {
     },
     onError: (e) => toast.error(e instanceof Error ? e.message : "Resend failed"),
   });
+
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteEntry({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Waitlist entry deleted.");
+      setConfirmDeleteId(null);
+      qc.invalidateQueries({ queryKey: ["admin", "waitlist"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+  });
+
 
   const rows = query.data ?? [];
   const sources = useMemo(() => {
@@ -157,8 +177,10 @@ function WaitlistPage() {
                       onApprove={() => mut.mutate({ id: r.id, status: "approved" })}
                       onReject={() => mut.mutate({ id: r.id, status: "rejected" })}
                       onResend={() => resendMut.mutate(r.id)}
-                      busy={mut.isPending || resendMut.isPending}
+                      onDelete={() => setConfirmDeleteId(r.id)}
+                      busy={mut.isPending || resendMut.isPending || deleteMut.isPending}
                     />
+
                   </td>
                 </tr>
               ))}
@@ -196,18 +218,44 @@ function WaitlistPage() {
                 onApprove={() => mut.mutate({ id: r.id, status: "approved" })}
                 onReject={() => mut.mutate({ id: r.id, status: "rejected" })}
                 onResend={() => resendMut.mutate(r.id)}
-                busy={mut.isPending || resendMut.isPending}
+                onDelete={() => setConfirmDeleteId(r.id)}
+                busy={mut.isPending || resendMut.isPending || deleteMut.isPending}
               />
+
             </div>
           ))}
         </div>
       </div>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
+        <AlertDialogContent className="border-[#1F2024] bg-[#14151A] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete waitlist entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#B8B8B8]">
+              Are you sure you want to delete this waitlist entry? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-[#1F2024] bg-transparent text-white hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMut.isPending}
+              onClick={() => confirmDeleteId && deleteMut.mutate(confirmDeleteId)}
+              className="bg-[#D61F3A] text-white hover:bg-[#B8172F]"
+            >
+              {deleteMut.isPending ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
 
 function RowActions({
-  status, emailStatus, onCopy, onApprove, onReject, onResend, busy,
+  status, emailStatus, onCopy, onApprove, onReject, onResend, onDelete, busy,
 }: {
   status: string;
   emailStatus?: string | null;
@@ -215,6 +263,7 @@ function RowActions({
   onApprove: () => void;
   onReject: () => void;
   onResend: () => void;
+  onDelete: () => void;
   busy: boolean;
 }) {
   const showResend = status === "approved" && emailStatus !== "sent";
@@ -238,9 +287,19 @@ function RowActions({
           <X className="mr-1 h-3.5 w-3.5" /> Reject
         </Button>
       )}
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={busy}
+        onClick={onDelete}
+        className="border-[#D61F3A]/40 bg-transparent text-[#ff8a98] hover:bg-[#D61F3A]/10 hover:text-white"
+      >
+        <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+      </Button>
     </div>
   );
 }
+
 
 function EmailPill({ status }: { status?: string | null }) {
   const s = status ?? "pending";

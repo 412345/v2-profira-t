@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useServerFn } from "@tanstack/react-start";
-import { useQuery } from "@tanstack/react-query";
-import { Search, Plus } from "lucide-react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Search, Plus, Trash2 } from "lucide-react";
+import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,11 +14,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { useMediaQuery } from "@/hooks/use-media-query";
-import { listInvestors } from "@/lib/admin/investors.functions";
+import { listInvestors, deleteInvestorAccount } from "@/lib/admin/investors.functions";
 import { fmtINR, fmtDateIST } from "@/lib/admin/format";
 import { investorStatuses } from "@/lib/admin/schemas";
+
 
 export const Route = createFileRoute("/_authenticated/admin/investors")({
   component: InvestorsPage,
@@ -34,6 +40,21 @@ function InvestorsPage() {
   const [q, setQ] = useState("");
   const [status, setStatus] = useState<string>("all");
   const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const qc = useQueryClient();
+  const deleteFn = useServerFn(deleteInvestorAccount);
+  const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
+  const deleteMut = useMutation({
+    mutationFn: (id: string) => deleteFn({ data: { id } }),
+    onSuccess: () => {
+      toast.success("Investor record deleted.");
+      setConfirmDelete(null);
+      qc.invalidateQueries({ queryKey: ["admin", "investors"] });
+      qc.invalidateQueries({ queryKey: ["admin", "stats"] });
+    },
+    onError: (e) => toast.error(e instanceof Error ? e.message : "Delete failed"),
+  });
+
 
   const rows = useMemo(() => {
     const list = data ?? [];
@@ -102,7 +123,9 @@ function InvestorsPage() {
                 <TableHead className="text-[#B8B8B8]">Tenure</TableHead>
                 <TableHead className="text-[#B8B8B8]">Status</TableHead>
                 <TableHead className="text-[#B8B8B8]">Created</TableHead>
+                <TableHead className="text-[#B8B8B8] text-right">Actions</TableHead>
               </TableRow>
+
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
@@ -132,7 +155,22 @@ function InvestorsPage() {
                     </div>
                   </TableCell>
                   <TableCell className="text-xs text-[#B8B8B8]">{fmtDateIST(r.created_at)}</TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setConfirmDelete({ id: r.id, name: r.full_name ?? "this investor" });
+                      }}
+                      className="border-[#D61F3A]/40 bg-transparent text-[#ff8a98] hover:bg-[#D61F3A]/10 hover:text-white"
+                    >
+                      <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete Record
+                    </Button>
+                  </TableCell>
                 </TableRow>
+
               ))}
             </TableBody>
           </Table>
@@ -166,10 +204,49 @@ function InvestorsPage() {
                 <div><span className="text-[#B8B8B8]">Tenure: </span><span className="text-white">{r.tenure_months}m</span></div>
                 <div className="col-span-2"><span className="text-[#B8B8B8]">Amount: </span><span className="text-white">{fmtINR(Number(r.amount))}</span></div>
               </div>
+              <div className="mt-3 flex justify-end">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setConfirmDelete({ id: r.id, name: r.full_name ?? "this investor" });
+                  }}
+                  className="border-[#D61F3A]/40 bg-transparent text-[#ff8a98] hover:bg-[#D61F3A]/10 hover:text-white"
+                >
+                  <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete Record
+                </Button>
+              </div>
             </Link>
           ))}
         </div>
       )}
+
+      <AlertDialog open={!!confirmDelete} onOpenChange={(o) => !o && setConfirmDelete(null)}>
+        <AlertDialogContent className="border-[#1F2024] bg-[#14151A] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete investor record?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#B8B8B8]">
+              This will permanently delete {confirmDelete?.name} along with all related
+              investment requests, documents, KYC files, and payouts. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-[#1F2024] bg-transparent text-white hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMut.isPending}
+              onClick={() => confirmDelete && deleteMut.mutate(confirmDelete.id)}
+              className="bg-[#D61F3A] text-white hover:bg-[#B8172F]"
+            >
+              {deleteMut.isPending ? "Deleting…" : "Delete Record"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
+

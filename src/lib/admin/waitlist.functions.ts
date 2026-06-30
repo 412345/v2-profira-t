@@ -63,3 +63,14 @@ export const setWaitlistStatus = createServerFn({ method: "POST" })
     return { ok: true, emailStatus, emailError };
   });
 
+export const deleteWaitlistEntry = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const { error } = await context.supabase.from("waitlist").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+

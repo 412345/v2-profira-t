@@ -185,3 +185,20 @@ export const ensureInvestorDocuments = createServerFn({ method: "POST" })
     }
     return { created: toCreate.length };
   });
+
+export const deleteInvestorAccount = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d) => z.object({ id: z.string().uuid() }).parse(d))
+  .handler(async ({ data, context }) => {
+    await assertStaff(context.supabase, context.userId);
+    const sb = context.supabase;
+    const tables = ["payouts", "documents", "kyc_documents", "investment_requests"] as const;
+    for (const t of tables) {
+      const { error } = await sb.from(t).delete().eq("investor_id", data.id);
+      if (error) throw new Error(`Failed cleaning ${t}: ${error.message}`);
+    }
+    const { error } = await sb.from("investors").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+

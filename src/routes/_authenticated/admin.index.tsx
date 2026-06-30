@@ -16,7 +16,10 @@ function DashboardPage() {
   const { data, isLoading } = useQuery({
     queryKey: ["admin", "stats"],
     queryFn: () => fetchStats(),
+    staleTime: 0,
+    refetchOnWindowFocus: true,
   });
+
 
   return (
     <div className="space-y-6">
