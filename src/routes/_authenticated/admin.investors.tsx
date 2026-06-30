@@ -123,7 +123,9 @@ function InvestorsPage() {
                 <TableHead className="text-[#B8B8B8]">Tenure</TableHead>
                 <TableHead className="text-[#B8B8B8]">Status</TableHead>
                 <TableHead className="text-[#B8B8B8]">Created</TableHead>
+                <TableHead className="text-[#B8B8B8] text-right">Actions</TableHead>
               </TableRow>
+
             </TableHeader>
             <TableBody>
               {rows.map((r) => (
