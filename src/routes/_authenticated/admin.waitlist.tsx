@@ -227,7 +227,7 @@ function WaitlistPage() {
 }
 
 function RowActions({
-  status, emailStatus, onCopy, onApprove, onReject, onResend, busy,
+  status, emailStatus, onCopy, onApprove, onReject, onResend, onDelete, busy,
 }: {
   status: string;
   emailStatus?: string | null;
@@ -235,6 +235,7 @@ function RowActions({
   onApprove: () => void;
   onReject: () => void;
   onResend: () => void;
+  onDelete: () => void;
   busy: boolean;
 }) {
   const showResend = status === "approved" && emailStatus !== "sent";
@@ -258,9 +259,19 @@ function RowActions({
           <X className="mr-1 h-3.5 w-3.5" /> Reject
         </Button>
       )}
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={busy}
+        onClick={onDelete}
+        className="border-[#D61F3A]/40 bg-transparent text-[#ff8a98] hover:bg-[#D61F3A]/10 hover:text-white"
+      >
+        <Trash2 className="mr-1 h-3.5 w-3.5" /> Delete
+      </Button>
     </div>
   );
 }
+
 
 function EmailPill({ status }: { status?: string | null }) {
   const s = status ?? "pending";
