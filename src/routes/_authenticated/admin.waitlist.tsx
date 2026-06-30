@@ -218,8 +218,10 @@ function WaitlistPage() {
                 onApprove={() => mut.mutate({ id: r.id, status: "approved" })}
                 onReject={() => mut.mutate({ id: r.id, status: "rejected" })}
                 onResend={() => resendMut.mutate(r.id)}
-                busy={mut.isPending || resendMut.isPending}
+                onDelete={() => setConfirmDeleteId(r.id)}
+                busy={mut.isPending || resendMut.isPending || deleteMut.isPending}
               />
+
             </div>
           ))}
         </div>
