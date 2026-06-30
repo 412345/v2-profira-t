@@ -2,15 +2,20 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listWaitlist, setWaitlistStatus } from "@/lib/admin/waitlist.functions";
+import { listWaitlist, setWaitlistStatus, deleteWaitlistEntry } from "@/lib/admin/waitlist.functions";
 import { sendApprovalEmail } from "@/lib/admin/email.functions";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Check, X, Copy, Search, Mailbox, Send } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Check, X, Copy, Search, Mailbox, Send, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+
 
 export const Route = createFileRoute("/_authenticated/admin/waitlist")({
   component: WaitlistPage,
