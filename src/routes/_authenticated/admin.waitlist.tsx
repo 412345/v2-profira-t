@@ -226,8 +226,32 @@ function WaitlistPage() {
           ))}
         </div>
       </div>
+
+      <AlertDialog open={!!confirmDeleteId} onOpenChange={(o) => !o && setConfirmDeleteId(null)}>
+        <AlertDialogContent className="border-[#1F2024] bg-[#14151A] text-white">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete waitlist entry?</AlertDialogTitle>
+            <AlertDialogDescription className="text-[#B8B8B8]">
+              Are you sure you want to delete this waitlist entry? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="border-[#1F2024] bg-transparent text-white hover:bg-white/5">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              disabled={deleteMut.isPending}
+              onClick={() => confirmDeleteId && deleteMut.mutate(confirmDeleteId)}
+              className="bg-[#D61F3A] text-white hover:bg-[#B8172F]"
+            >
+              {deleteMut.isPending ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
+
 }
 
 function RowActions({
